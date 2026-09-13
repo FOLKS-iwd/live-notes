@@ -21,38 +21,25 @@
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
-    font-family: var(--sans);
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-    padding: 0 16px;
+    font-family: var(--sans); background: var(--bg); color: var(--text);
+    min-height: 100vh; padding: 0 16px;
   }
   .app { max-width: 800px; margin: 0 auto; }
-
   .header {
     display: flex; align-items: baseline; justify-content: space-between;
     padding: 24px 0 14px; border-bottom: 1px solid var(--border);
   }
-  .header h1 {
-    font-family: var(--mono); font-size: 0.9rem; font-weight: 600;
-    color: var(--text-dim); letter-spacing: 0.03em;
-  }
+  .header h1 { font-family: var(--mono); font-size: 0.9rem; font-weight: 600; color: var(--text-dim); letter-spacing: 0.03em; }
   .header h1 b { color: var(--accent); }
   .header-right { display: flex; gap: 8px; align-items: center; }
-  .count {
-    font-family: var(--mono); font-size: 0.72rem; color: var(--text-dim);
-    font-variant-numeric: tabular-nums;
-  }
-
+  .count { font-family: var(--mono); font-size: 0.72rem; color: var(--text-dim); font-variant-numeric: tabular-nums; }
   .toolbar { display: flex; gap: 8px; padding: 12px 0; }
   .search {
     flex: 1; padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px;
-    background: var(--surface); color: var(--text); font-family: var(--sans);
-    font-size: 0.85rem;
+    background: var(--surface); color: var(--text); font-family: var(--sans); font-size: 0.85rem;
   }
   .search::placeholder { color: var(--text-dim); }
   .search:focus { outline: none; border-color: var(--accent); }
-
   .btn {
     padding: 8px 14px; border: 1px solid var(--border); border-radius: 6px;
     background: var(--surface); color: var(--text); font-family: var(--mono);
@@ -64,12 +51,8 @@
   .btn-accent:hover { filter: brightness(1.1); color: #0f0f0e; }
   .btn-danger:hover { border-color: var(--danger); color: var(--danger); }
   .btn-sm { padding: 4px 10px; font-size: 0.72rem; }
-  .btn-icon {
-    padding: 6px 8px; background: none; border: none; color: var(--text-dim);
-    cursor: pointer; font-size: 1rem;
-  }
+  .btn-icon { padding: 6px 8px; background: none; border: none; color: var(--text-dim); cursor: pointer; font-size: 1rem; }
   .btn-icon:hover { color: var(--accent); }
-
   .notes { display: flex; flex-direction: column; gap: 1px; padding-top: 4px; }
   .note-row {
     display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: baseline;
@@ -80,33 +63,18 @@
   .note-name { font-size: 0.88rem; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .note-name.empty { color: var(--text-dim); font-style: italic; }
   .note-time { font-family: var(--mono); font-size: 0.7rem; color: var(--text-dim); font-variant-numeric: tabular-nums; }
-
-  .editor {
-    background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
-    margin-top: 10px;
-  }
-  .ed-head {
-    display: flex; align-items: center; gap: 8px; padding: 8px 12px;
-    border-bottom: 1px solid var(--border);
-  }
-  .ed-title {
-    flex: 1; border: none; background: none; color: var(--text);
-    font-family: var(--sans); font-size: 0.95rem; font-weight: 600; outline: none;
-  }
+  .editor { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; margin-top: 10px; }
+  .ed-head { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-bottom: 1px solid var(--border); }
+  .ed-title { flex: 1; border: none; background: none; color: var(--text); font-family: var(--sans); font-size: 0.95rem; font-weight: 600; outline: none; }
   .ed-title::placeholder { color: var(--text-dim); font-weight: 400; }
   .ed-body {
     width: 100%; min-height: 240px; padding: 12px; border: none; background: none;
-    color: var(--text); font-family: var(--sans); font-size: 0.86rem;
-    line-height: 1.7; resize: vertical; outline: none;
+    color: var(--text); font-family: var(--sans); font-size: 0.86rem; line-height: 1.7;
+    resize: vertical; outline: none;
   }
-  .ed-foot {
-    display: flex; justify-content: space-between; align-items: center;
-    padding: 6px 12px; border-top: 1px solid var(--border);
-  }
+  .ed-foot { display: flex; justify-content: space-between; align-items: center; padding: 6px 12px; border-top: 1px solid var(--border); }
   .ed-status { font-family: var(--mono); font-size: 0.7rem; color: var(--text-dim); }
-
   .empty { text-align: center; padding: 48px 16px; color: var(--text-dim); font-size: 0.85rem; }
-
   .toast {
     position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(50px);
     padding: 7px 16px; border-radius: 6px; font-family: var(--mono); font-size: 0.75rem;
@@ -114,63 +82,47 @@
   }
   .toast.err { background: var(--danger); color: #fff; }
   .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
-
-  /* PAT modal */
-  .modal-bg {
-    position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 40;
-    display: flex; align-items: center; justify-content: center;
+  .setup-banner {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+    padding: 16px; margin-top: 12px; font-size: 0.84rem; line-height: 1.6;
   }
-  .modal {
-    background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
-    padding: 24px; max-width: 420px; width: 90%;
-  }
-  .modal h3 { font-size: 0.95rem; margin-bottom: 6px; }
-  .modal p { font-size: 0.8rem; color: var(--text-dim); line-height: 1.5; margin-bottom: 14px; }
-  .modal input {
-    width: 100%; padding: 9px 12px; border: 1px solid var(--border); border-radius: 6px;
-    background: var(--bg); color: var(--text); font-family: var(--mono); font-size: 0.82rem;
-    margin-bottom: 10px;
-  }
-  .modal input:focus { outline: none; border-color: var(--accent); }
-  .modal-btns { display: flex; gap: 8px; justify-content: flex-end; }
-
-  @media (max-width: 500px) {
-    .ed-body { min-height: 180px; }
-  }
+  .setup-banner code { font-family: var(--mono); background: var(--bg); padding: 2px 6px; border-radius: 4px; font-size: 0.78rem; color: var(--accent); }
+  @media (max-width: 500px) { .ed-body { min-height: 180px; } }
 </style>
 </head>
 <body>
 <div class="app" id="app"><div class="empty">Loading...</div></div>
 <div class="toast" id="toast"></div>
-
 <script>
 const REPO = 'FOLKS-iwd/live-notes';
 const FILE = 'notes.json';
 const API = 'https://api.github.com';
 const RAW = 'https://raw.githubusercontent.com/' + REPO + '/main/' + FILE;
 
-let notes = [];
-let sha = null;
-let activeId = null;
-let search = '';
-let saveTimer = null;
+let notes = [], sha = null, activeId = null, search = '', saveTimer = null;
 
-function getToken() { try { return localStorage.getItem('ln_pat'); } catch { return null; } }
-function setToken(t) { try { localStorage.setItem('ln_pat', t); } catch {} }
-function clearToken() { try { localStorage.removeItem('ln_pat'); } catch {} }
+function gt() { try { return localStorage.getItem('ln_t'); } catch { return null; } }
+function st(t) { try { localStorage.setItem('ln_t', t); } catch {} }
+
+// Auto-inject token from URL hash: #t=<token>
+(function grabHash() {
+  const h = location.hash;
+  if (h.startsWith('#t=')) {
+    const t = h.slice(3);
+    if (t.length > 10) { st(t); }
+    history.replaceState(null, '', location.pathname + location.search);
+  }
+})();
 
 function toast(msg, err) {
   const el = document.getElementById('toast');
-  el.textContent = msg;
-  el.className = 'toast' + (err ? ' err' : '');
+  el.textContent = msg; el.className = 'toast' + (err ? ' err' : '');
   clearTimeout(el._t);
   setTimeout(() => el.classList.add('show'), 10);
   el._t = setTimeout(() => el.classList.remove('show'), 1800);
 }
-
 function esc(s) { const d = document.createElement('span'); d.textContent = s || ''; return d.innerHTML; }
 function genId() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
-
 function fmtTime(ts) {
   if (!ts) return '';
   const s = Math.floor((Date.now() - ts) / 1000);
@@ -180,33 +132,26 @@ function fmtTime(ts) {
   return new Date(ts).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });
 }
 
-// Read notes — public, no auth needed
 async function loadNotes() {
-  const cacheBust = '?t=' + Date.now();
   try {
-    const res = await fetch(RAW + cacheBust);
-    if (res.ok) {
-      notes = await res.json();
-    } else if (res.status === 404) {
-      notes = [];
-    }
-  } catch { /* offline, keep current */ }
-  // Also get sha for writes
-  const token = getToken();
+    const res = await fetch(RAW + '?t=' + Date.now());
+    if (res.ok) notes = await res.json();
+    else if (res.status === 404) notes = [];
+  } catch {}
+  const token = gt();
   if (token) {
     try {
-      const meta = await fetch(API + '/repos/' + REPO + '/contents/' + FILE, {
+      const r = await fetch(API + '/repos/' + REPO + '/contents/' + FILE, {
         headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/vnd.github+json' }
       });
-      if (meta.ok) { sha = (await meta.json()).sha; }
+      if (r.ok) sha = (await r.json()).sha;
     } catch {}
   }
 }
 
-// Write notes — needs PAT
 async function saveNotes() {
-  const token = getToken();
-  if (!token) { showPatModal(); return; }
+  const token = gt();
+  if (!token) return false;
   const body = {
     message: 'notes ' + new Date().toISOString().slice(0, 16),
     content: btoa(unescape(encodeURIComponent(JSON.stringify(notes, null, 2)))),
@@ -217,16 +162,9 @@ async function saveNotes() {
     headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/vnd.github+json' },
     body: JSON.stringify(body)
   });
-  if (!res.ok) {
-    if (res.status === 401 || res.status === 403) {
-      clearToken();
-      showPatModal();
-      return;
-    }
-    throw new Error('Save failed');
-  }
-  const data = await res.json();
-  sha = data.content.sha;
+  if (!res.ok) throw new Error('save failed');
+  sha = (await res.json()).content.sha;
+  return true;
 }
 
 function debounceSave() {
@@ -235,43 +173,6 @@ function debounceSave() {
     try { await saveNotes(); toast('saved'); } catch { toast('save failed', true); }
     render();
   }, 800);
-}
-
-function showPatModal() {
-  let existing = document.getElementById('pat-modal');
-  if (existing) return;
-  const div = document.createElement('div');
-  div.id = 'pat-modal';
-  div.className = 'modal-bg';
-  div.innerHTML = `
-    <div class="modal">
-      <h3>One-time setup</h3>
-      <p>Paste a GitHub PAT with <b>Contents read/write</b> on the live-notes repo. Stored in this browser only, never sent anywhere else.</p>
-      <input type="password" id="pat-input" placeholder="ghp_... or github_pat_...">
-      <div class="modal-btns">
-        <button class="btn btn-sm" id="pat-cancel">cancel</button>
-        <button class="btn btn-accent btn-sm" id="pat-save">save</button>
-      </div>
-    </div>
-  `;
-  document.body.appendChild(div);
-  document.getElementById('pat-cancel').onclick = () => div.remove();
-  document.getElementById('pat-save').onclick = async () => {
-    const val = document.getElementById('pat-input').value.trim();
-    if (!val) return;
-    setToken(val);
-    div.remove();
-    try {
-      await loadNotes();
-      await saveNotes();
-      toast('connected');
-      render();
-    } catch {
-      clearToken();
-      toast('bad token', true);
-    }
-  };
-  document.getElementById('pat-input').focus();
 }
 
 function filtered() {
@@ -285,7 +186,7 @@ function render() {
   const app = document.getElementById('app');
   const active = notes.find(n => n.id === activeId);
   const list = filtered();
-  const hasToken = !!getToken();
+  const connected = !!gt();
 
   app.innerHTML = `
     <div class="header">
@@ -293,15 +194,18 @@ function render() {
       <div class="header-right">
         <span class="count">${notes.length}</span>
         <button class="btn-icon" id="btn-sync" title="Sync">&#x21bb;</button>
-        ${hasToken
-          ? '<button class="btn-icon" id="btn-logout" title="Clear token">&#x2715;</button>'
-          : '<button class="btn-icon" id="btn-key" title="Set token">&#x1f511;</button>'
-        }
       </div>
     </div>
+    ${!connected ? `
+      <div class="setup-banner">
+        Run this on each PC to connect (one-time):<br>
+        <code>start "https://folks-iwd.github.io/live-notes/#t=$(gh auth token)"</code><br>
+        <span style="color:var(--text-dim);font-size:0.78rem;">Token stays in your browser only, never in the source code.</span>
+      </div>
+    ` : ''}
     <div class="toolbar">
       <input class="search" placeholder="search..." value="${esc(search)}" id="search-input">
-      <button class="btn btn-accent" id="btn-new">+ new</button>
+      <button class="btn btn-accent" id="btn-new" ${!connected ? 'disabled title="Connect first"' : ''}>+ new</button>
     </div>
     <div class="notes" id="note-list">
       ${list.map(n => `
@@ -313,7 +217,7 @@ function render() {
       ${list.length === 0 && notes.length > 0 ? '<div class="empty">No matches</div>' : ''}
       ${notes.length === 0 ? '<div class="empty">No notes yet</div>' : ''}
     </div>
-    ${active ? `
+    ${active && connected ? `
       <div class="editor">
         <div class="ed-head">
           <input class="ed-title" value="${esc(active.title)}" placeholder="Title..." id="ed-title">
@@ -329,30 +233,19 @@ function render() {
     ` : ''}
   `;
 
-  // Events
   document.getElementById('search-input').addEventListener('input', e => { search = e.target.value; render(); });
-  document.getElementById('btn-new').addEventListener('click', createNote);
+  document.getElementById('btn-new')?.addEventListener('click', createNote);
   document.getElementById('btn-sync').addEventListener('click', async () => { await loadNotes(); toast('synced'); render(); });
-
-  const logoutBtn = document.getElementById('btn-logout');
-  if (logoutBtn) logoutBtn.addEventListener('click', () => { clearToken(); toast('token cleared'); render(); });
-  const keyBtn = document.getElementById('btn-key');
-  if (keyBtn) keyBtn.addEventListener('click', showPatModal);
 
   document.querySelectorAll('.note-row').forEach(row => {
     row.addEventListener('click', () => { activeId = row.dataset.id; render(); document.getElementById('ed-title')?.focus(); });
   });
 
-  if (active) {
-    document.getElementById('ed-title').addEventListener('input', function() {
-      active.title = this.value; active.updated = Date.now(); debounceSave();
-    });
-    document.getElementById('ed-body').addEventListener('input', function() {
-      active.body = this.value; active.updated = Date.now(); debounceSave();
-    });
+  if (active && connected) {
+    document.getElementById('ed-title').addEventListener('input', function() { active.title = this.value; active.updated = Date.now(); debounceSave(); });
+    document.getElementById('ed-body').addEventListener('input', function() { active.body = this.value; active.updated = Date.now(); debounceSave(); });
     document.getElementById('btn-del').addEventListener('click', async () => {
-      notes = notes.filter(n => n.id !== activeId);
-      activeId = null;
+      notes = notes.filter(n => n.id !== activeId); activeId = null;
       try { await saveNotes(); toast('deleted'); } catch { toast('delete failed', true); }
       render();
     });
@@ -361,17 +254,17 @@ function render() {
 }
 
 async function createNote() {
-  if (!getToken()) { showPatModal(); return; }
   const id = genId();
   notes.unshift({ id, title: '', body: '', created: Date.now(), updated: Date.now() });
-  activeId = id;
-  render();
-  debounceSave();
+  activeId = id; render(); debounceSave();
   document.getElementById('ed-title')?.focus();
 }
 
 document.addEventListener('keydown', e => {
-  if ((e.ctrlKey || e.metaKey) && e.key === 's') { e.preventDefault(); clearTimeout(saveTimer); saveNotes().then(() => { toast('saved'); render(); }).catch(() => toast('save failed', true)); }
+  if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+    e.preventDefault(); clearTimeout(saveTimer);
+    saveNotes().then(() => { toast('saved'); render(); }).catch(() => toast('save failed', true));
+  }
   if (e.key === 'Escape' && activeId) { activeId = null; render(); }
 });
 
