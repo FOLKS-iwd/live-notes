@@ -133,20 +133,35 @@ function fmtTime(ts) {
 }
 
 async function loadNotes() {
-  try {
-    const res = await fetch(RAW + '?t=' + Date.now());
-    if (res.ok) notes = await res.json();
-    else if (res.status === 404) notes = [];
-  } catch {}
   const token = gt();
   if (token) {
     try {
       const r = await fetch(API + '/repos/' + REPO + '/contents/' + FILE, {
         headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/vnd.github+json' }
       });
-      if (r.ok) sha = (await r.json()).sha;
+      if (r.ok) {
+        const data = await r.json();
+        sha = data.sha;
+        notes = JSON.parse(atob(data.content.replace(/\n/g, '')));
+        return;
+      }
     } catch {}
   }
+  try {
+    const res = await fetch(RAW + '?t=' + Date.now());
+    if (res.ok) notes = await res.json();
+    else if (res.status === 404) notes = [];
+  } catch {}
+}
+
+let pollTimer = null;
+function startPolling() {
+  clearInterval(pollTimer);
+  pollTimer = setInterval(async () => {
+    const oldSha = sha;
+    await loadNotes();
+    if (sha && sha !== oldSha) { toast('synced'); render(); }
+  }, 15000);
 }
 
 async function saveNotes() {
@@ -268,7 +283,7 @@ document.addEventListener('keydown', e => {
   if (e.key === 'Escape' && activeId) { activeId = null; render(); }
 });
 
-(async () => { await loadNotes(); render(); })();
+(async () => { await loadNotes(); render(); startPolling(); })();
 </script>
 </body>
 </html>
