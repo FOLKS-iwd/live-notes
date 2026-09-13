@@ -2,9 +2,9 @@
   {
     "id": "mtzkdmbss2788",
     "title": "ttp",
-    "body": "PS C:\\Users\\akenani\\OneDrive - ODDO BHF\\Documents\\TIBER26-ODDOBHF-TTPs> & .\\T1068_BYOVD_PrivEsc.ps1\nAdd-Type : Impossible d'ajouter un type. Le nom de type ÃÂ«ÃÂ DriverCommÃÂ ÃÂ» existe dÃÂ©jÃÂ .\nAu caractÃÂ¨re C:\\Users\\akenani\\OneDrive - ODDO BHF\\Documents\\TIBER26-ODDOBHF-TTPs\\T1068_BYOVD_PrivEsc.ps1:15 : 1\n+ Add-Type -TypeDefinition @'\n+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~\n    + CategoryInfo          : InvalidOperation : (DriverComm:String) [Add-Type], Exception\n    + FullyQualifiedErrorId : TYPE_ALREADY_EXISTS,Microsoft.PowerShell.Commands.AddTypeCommand\n",
+    "body": "\nSet-ExecutionPolicy Bypass -Scope Process -Force\n& \".\\T1068_BYOVD_PrivEsc.ps1\"",
     "created": 1789288841800,
-    "updated": 1789290739842
+    "updated": 1789290807054
   },
   {
     "id": "mtzk8lmzd2hch",
