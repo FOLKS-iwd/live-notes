@@ -2,14 +2,14 @@
   {
     "id": "mtzkdmbss2788",
     "title": "ttp",
-    "body": "PS C:\\Users\\akenani\\OneDrive - ODDO BHF\\Documents\\TIBER26-ODDOBHF-TTPs> & .\\T1068_BYOVD_PrivEsc.ps1\nAdd-Type : Impossible d'ajouter un type. Le nom de type « DriverComm » existe déjà.\nAu caractère C:\\Users\\akenani\\OneDrive - ODDO BHF\\Documents\\TIBER26-ODDOBHF-TTPs\\T1068_BYOVD_PrivEsc.ps1:15 : 1\n+ Add-Type -TypeDefinition @'\n+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~\n    + CategoryInfo          : InvalidOperation : (DriverComm:String) [Add-Type], Exception\n    + FullyQualifiedErrorId : TYPE_ALREADY_EXISTS,Microsoft.PowerShell.Commands.AddTypeCommand\n",
+    "body": "PS C:\\Users\\akenani\\OneDrive - ODDO BHF\\Documents\\TIBER26-ODDOBHF-TTPs> & .\\T1068_BYOVD_PrivEsc.ps1\nAdd-Type : Impossible d'ajouter un type. Le nom de type Â«Â DriverCommÂ Â» existe dÃ©jÃ .\nAu caractÃ¨re C:\\Users\\akenani\\OneDrive - ODDO BHF\\Documents\\TIBER26-ODDOBHF-TTPs\\T1068_BYOVD_PrivEsc.ps1:15 : 1\n+ Add-Type -TypeDefinition @'\n+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~\n    + CategoryInfo          : InvalidOperation : (DriverComm:String) [Add-Type], Exception\n    + FullyQualifiedErrorId : TYPE_ALREADY_EXISTS,Microsoft.PowerShell.Commands.AddTypeCommand\n",
     "created": 1789288841800,
     "updated": 1789290739842
   },
   {
     "id": "mtzk8lmzd2hch",
     "title": "ae",
-    "body": "Use these worthwhile 2026 retest TTPs from your list, prioritized for likely Blocked / high-signal outcomes:\n\n1. T1068 — Exploitation for Privilege Escalation\nBest prevention test. Focus: vulnerable driver/BYOVD or known local privilege-escalation behavior.\n2. T1558.004 — AS-REP Roasting\nStrong AD credential-access test. Focus: accounts with  Do not require Kerberos preauthentication .\n3. T1547.002 — Authentication Package\nHigh-impact persistence. Focus: LSA authentication package registry/DLL persistence.\n4. T1547.005 — Security Support Provider\nSimilar LSASS-adjacent persistence, often high-signal for EDR.\n5. T1528 — Steal Application Access Token\nVery relevant for cloud/SaaS ransomware paths. Focus: browser, CLI, OAuth, cloud-token access.\n6. T1071.002 — File Transfer Protocols\nKeep it because your old outcome was Blocked - Not Alerted. Retest to see if alerting improved.",
+    "body": "Use these worthwhile 2026 retest TTPs from your list, prioritized for likely Blocked / high-signal outcomes:\n\n1. T1068 â Exploitation for Privilege Escalation\nBest prevention test. Focus: vulnerable driver/BYOVD or known local privilege-escalation behavior.\n2. T1558.004 â AS-REP Roasting\nStrong AD credential-access test. Focus: accounts with Â Do not require Kerberos preauthenticationÂ .\n3. T1547.002 â Authentication Package\nHigh-impact persistence. Focus: LSA authentication package registry/DLL persistence.\n4. T1547.005 â Security Support Provider\nSimilar LSASS-adjacent persistence, often high-signal for EDR.\n5. T1528 â Steal Application Access Token\nVery relevant for cloud/SaaS ransomware paths. Focus: browser, CLI, OAuth, cloud-token access.\n6. T1071.002 â File Transfer Protocols\nKeep it because your old outcome was Blocked - Not Alerted. Retest to see if alerting improved.",
     "created": 1789288607627,
     "updated": 1789288832762
   }
