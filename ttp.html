@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CS TTP Tests</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap">
+<style>
+  :root {
+    --bg: #0f0f0e; --surface: #1a1918; --surface-alt: #242320; --border: #333129;
+    --text: #e8e6e0; --text-dim: #7a776e; --accent: #52b788; --red: #e5625a;
+    --orange: #e09f3e; --blue: #6ea8fe; --mono: 'IBM Plex Mono','Menlo',monospace;
+    --sans: 'Inter',system-ui,sans-serif;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:var(--sans); background:var(--bg); color:var(--text); min-height:100vh; padding:0 16px; }
+  .app { max-width:700px; margin:0 auto; }
+  .header { padding:28px 0 14px; border-bottom:1px solid var(--border); margin-bottom:16px; }
+  .header h1 { font-family:var(--mono); font-size:0.9rem; font-weight:600; color:var(--text-dim); letter-spacing:0.03em; }
+  .header h1 b { color:var(--red); }
+  .header p { font-size:0.8rem; color:var(--text-dim); margin-top:6px; }
+  .dl-all { display:inline-block; margin:14px 0; padding:10px 20px; background:var(--accent); color:#0f0f0e;
+    border:none; border-radius:6px; font-family:var(--mono); font-size:0.82rem; font-weight:600;
+    cursor:pointer; text-decoration:none; }
+  .dl-all:hover { filter:brightness(1.15); }
+  .cards { display:flex; flex-direction:column; gap:8px; }
+  .card { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:14px 16px;
+    display:grid; grid-template-columns:1fr auto; gap:12px; align-items:start; }
+  .card:hover { border-color:var(--accent); }
+  .ttp-id { font-family:var(--mono); font-size:0.75rem; font-weight:600; margin-bottom:4px; }
+  .ttp-name { font-size:0.88rem; font-weight:500; margin-bottom:6px; }
+  .ttp-signals { font-size:0.75rem; color:var(--text-dim); line-height:1.5; }
+  .tag { display:inline-block; padding:1px 6px; border-radius:3px; font-family:var(--mono); font-size:0.68rem; margin-right:4px; margin-bottom:3px; }
+  .tag-cred { background:rgba(224,159,62,0.15); color:var(--orange); }
+  .tag-persist { background:rgba(229,98,90,0.15); color:var(--red); }
+  .tag-privesc { background:rgba(110,168,254,0.15); color:var(--blue); }
+  .tag-exfil { background:rgba(82,183,136,0.15); color:var(--accent); }
+  .dl-btn { padding:8px 14px; background:var(--surface-alt); border:1px solid var(--border); border-radius:6px;
+    color:var(--text); font-family:var(--mono); font-size:0.75rem; cursor:pointer; white-space:nowrap;
+    text-decoration:none; display:inline-block; }
+  .dl-btn:hover { border-color:var(--accent); color:var(--accent); }
+  .back { display:inline-block; margin-top:16px; margin-bottom:24px; font-family:var(--mono); font-size:0.78rem; color:var(--text-dim); text-decoration:none; }
+  .back:hover { color:var(--accent); }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <h1><b>CS TTP</b> test scripts</h1>
+    <p>6 aggressive detection tests — run as admin for max signal</p>
+  </div>
+
+  <button class="dl-all" onclick="downloadAll()">Download all 6 scripts (.zip)</button>
+
+  <div class="cards">
+    <div class="card">
+      <div>
+        <div class="ttp-id"><span class="tag tag-privesc">PRIVESC</span> T1068</div>
+        <div class="ttp-name">BYOVD Privilege Escalation</div>
+        <div class="ttp-signals">RTCore64.sys drop, kernel service create, DeviceIoControl IOCTL</div>
+      </div>
+      <a class="dl-btn" href="T1068_BYOVD_PrivEsc.ps1" download>download</a>
+    </div>
+    <div class="card">
+      <div>
+        <div class="ttp-id"><span class="tag tag-cred">CRED</span> T1558.004</div>
+        <div class="ttp-name">AS-REP Roasting</div>
+        <div class="ttp-signals">LDAP DONT_REQ_PREAUTH enum, raw AS-REQ port 88, hashcat spawn</div>
+      </div>
+      <a class="dl-btn" href="T1558.004_ASREP_Roasting.ps1" download>download</a>
+    </div>
+    <div class="card">
+      <div>
+        <div class="ttp-id"><span class="tag tag-persist">PERSIST</span> T1547.002</div>
+        <div class="ttp-name">Authentication Package</div>
+        <div class="ttp-signals">LSA Auth+Notification Packages registry, AddSecurityPackage, LSASS handle</div>
+      </div>
+      <a class="dl-btn" href="T1547.002_AuthPackage_Persistence.ps1" download>download</a>
+    </div>
+    <div class="card">
+      <div>
+        <div class="ttp-id"><span class="tag tag-persist">PERSIST</span> T1547.005</div>
+        <div class="ttp-name">Security Support Provider</div>
+        <div class="ttp-signals">mimilib.dll drop, SSP registry, LSASS injection chain (VirtualAllocEx+CRT)</div>
+      </div>
+      <a class="dl-btn" href="T1547.005_SSP_Persistence.ps1" download>download</a>
+    </div>
+    <div class="card">
+      <div>
+        <div class="ttp-id"><span class="tag tag-cred">CRED</span> T1528</div>
+        <div class="ttp-name">Steal Application Access Token</div>
+        <div class="ttp-signals">Azure/AWS/GCP tokens, browser cookies+DPAPI, Slack/Teams/Discord, vault dump</div>
+      </div>
+      <a class="dl-btn" href="T1528_StealAppToken.ps1" download>download</a>
+    </div>
+    <div class="card">
+      <div>
+        <div class="ttp-id"><span class="tag tag-exfil">EXFIL</span> T1071.002</div>
+        <div class="ttp-name">FTP/TFTP/SMB Exfiltration</div>
+        <div class="ttp-signals">ftp.exe scripted, raw TCP FTP, TFTP UDP WRQ, SMB copy to external</div>
+      </div>
+      <a class="dl-btn" href="T1071.002_FTP_Exfil.ps1" download>download</a>
+    </div>
+  </div>
+
+  <a class="back" href="./">&#8592; back to notes</a>
+</div>
+
+<script>
+async function downloadAll() {
+  const files = [
+    'T1068_BYOVD_PrivEsc.ps1',
+    'T1558.004_ASREP_Roasting.ps1',
+    'T1547.002_AuthPackage_Persistence.ps1',
+    'T1547.005_SSP_Persistence.ps1',
+    'T1528_StealAppToken.ps1',
+    'T1071.002_FTP_Exfil.ps1'
+  ];
+  const base = 'https://raw.githubusercontent.com/FOLKS-iwd/live-notes/main/';
+
+  const { default: JSZip } = await import('https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js').catch(() => {
+    // Fallback: download individually
+    files.forEach(f => {
+      const a = document.createElement('a');
+      a.href = f; a.download = f; a.click();
+    });
+    return { default: null };
+  });
+
+  if (!JSZip) return;
+
+  const zip = new JSZip();
+  for (const f of files) {
+    try {
+      const res = await fetch(base + f + '?t=' + Date.now());
+      if (res.ok) zip.file(f, await res.text());
+    } catch {}
+  }
+
+  const blob = await zip.generateAsync({ type: 'blob' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'cs-ttp-tests.zip'; a.click();
+  URL.revokeObjectURL(url);
+}
+</script>
+</body>
+</html>
