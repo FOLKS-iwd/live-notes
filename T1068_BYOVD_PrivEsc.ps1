@@ -16,22 +16,24 @@ Add-Type -TypeDefinition @'
 using System;
 using System.Runtime.InteropServices;
 public class DriverComm {
+    [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Auto)]
+    public static extern IntPtr CreateFile(string lpFileName, int dwDesiredAccess,
+        int dwShareMode, IntPtr lpSecurityAttributes, int dwCreationDisposition,
+        int dwFlagsAndAttributes, IntPtr hTemplateFile);
     [DllImport("kernel32.dll", SetLastError = true)]
-    public static extern IntPtr CreateFile(string lpFileName, uint dwDesiredAccess,
-        uint dwShareMode, IntPtr lpSecurityAttributes, uint dwCreationDisposition,
-        uint dwFlagsAndAttributes, IntPtr hTemplateFile);
-    [DllImport("kernel32.dll", SetLastError = true)]
-    public static extern bool DeviceIoControl(IntPtr hDevice, uint dwIoControlCode,
-        IntPtr lpInBuffer, uint nInBufferSize, IntPtr lpOutBuffer, uint nOutBufferSize,
-        ref uint lpBytesReturned, IntPtr lpOverlapped);
-    [DllImport("kernel32.dll")] public static extern bool CloseHandle(IntPtr hObject);
+    public static extern bool DeviceIoControl(IntPtr hDevice, int dwIoControlCode,
+        IntPtr lpInBuffer, int nInBufferSize, IntPtr lpOutBuffer, int nOutBufferSize,
+        ref int lpBytesReturned, IntPtr lpOverlapped);
+    [DllImport("kernel32.dll")]
+    public static extern bool CloseHandle(IntPtr hObject);
 }
 '@ -ErrorAction SilentlyContinue
 
-$handle = [DriverComm]::CreateFile("\\.\RTCore64", 0xC0000000, 0, [IntPtr]::Zero, 3, 0, [IntPtr]::Zero)
-if ($handle -ne [IntPtr]::new(-1)) {
-    $bytesReturned = [uint32]0
-    [DriverComm]::DeviceIoControl($handle, 0x80002048, [IntPtr]::Zero, 0, [IntPtr]::Zero, 0, [ref]$bytesReturned, [IntPtr]::Zero) | Out-Null
+$INVALID_HANDLE = [IntPtr]::new(-1)
+$handle = [DriverComm]::CreateFile("\\.\RTCore64", [int]0x40000000, 0, [IntPtr]::Zero, 3, 0, [IntPtr]::Zero)
+if ($handle -ne $INVALID_HANDLE -and $handle -ne [IntPtr]::Zero) {
+    $bytesReturned = 0
+    [DriverComm]::DeviceIoControl($handle, [int]0x7FFF2048, [IntPtr]::Zero, 0, [IntPtr]::Zero, 0, [ref]$bytesReturned, [IntPtr]::Zero) | Out-Null
     [DriverComm]::CloseHandle($handle) | Out-Null
 }
 
