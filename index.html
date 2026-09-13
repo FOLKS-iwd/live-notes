@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Live Notes</title>
+<style>
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --border: #30363d;
+    --text: #e6edf3;
+    --text-dim: #8b949e;
+    --accent: #58a6ff;
+    --accent-hover: #79c0ff;
+    --danger: #f85149;
+    --success: #3fb950;
+    --shadow: rgba(0,0,0,0.3);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+  .app { max-width: 900px; margin: 0 auto; padding: 16px; }
+
+  /* Header */
+  .header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 0; border-bottom: 1px solid var(--border); margin-bottom: 16px;
+  }
+  .header h1 { font-size: 1.4rem; font-weight: 600; }
+  .header h1 span { color: var(--accent); }
+  .header-actions { display: flex; gap: 8px; }
+
+  /* Buttons */
+  .btn {
+    padding: 6px 14px; border-radius: 6px; border: 1px solid var(--border);
+    background: var(--surface); color: var(--text); cursor: pointer;
+    font-size: 0.85rem; transition: all 0.15s;
+  }
+  .btn:hover { border-color: var(--accent); color: var(--accent); }
+  .btn-primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .btn-primary:hover { background: var(--accent-hover); }
+  .btn-danger { color: var(--danger); }
+  .btn-danger:hover { border-color: var(--danger); background: rgba(248,81,73,0.1); }
+  .btn-sm { padding: 4px 10px; font-size: 0.8rem; }
+
+  /* Setup screen */
+  .setup {
+    max-width: 480px; margin: 80px auto; padding: 32px;
+    background: var(--surface); border-radius: 12px; border: 1px solid var(--border);
+  }
+  .setup h2 { margin-bottom: 8px; font-size: 1.2rem; }
+  .setup p { color: var(--text-dim); font-size: 0.9rem; margin-bottom: 20px; line-height: 1.5; }
+  .setup input {
+    width: 100%; padding: 10px 12px; border-radius: 6px;
+    border: 1px solid var(--border); background: var(--bg); color: var(--text);
+    font-size: 0.9rem; margin-bottom: 12px; font-family: monospace;
+  }
+  .setup input:focus { outline: none; border-color: var(--accent); }
+
+  /* Toast */
+  .toast {
+    position: fixed; bottom: 20px; right: 20px; padding: 10px 18px;
+    border-radius: 8px; font-size: 0.85rem; z-index: 100;
+    transform: translateY(80px); opacity: 0; transition: all 0.3s;
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast.success { background: var(--success); color: #fff; }
+  .toast.error { background: var(--danger); color: #fff; }
+
+  /* Notes list */
+  .notes-list { display: flex; flex-direction: column; gap: 8px; }
+  .note-card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+    padding: 14px 16px; cursor: pointer; transition: all 0.15s;
+  }
+  .note-card:hover { border-color: var(--accent); }
+  .note-card.active { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+  .note-card-title { font-weight: 600; font-size: 0.95rem; margin-bottom: 4px; }
+  .note-card-preview { color: var(--text-dim); font-size: 0.82rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .note-card-meta { color: var(--text-dim); font-size: 0.75rem; margin-top: 6px; }
+
+  /* Editor */
+  .editor {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+    padding: 16px; margin-bottom: 12px;
+  }
+  .editor-title {
+    width: 100%; background: none; border: none; color: var(--text);
+    font-size: 1.1rem; font-weight: 600; margin-bottom: 10px; outline: none;
+    border-bottom: 1px solid var(--border); padding-bottom: 8px;
+  }
+  .editor-body {
+    width: 100%; min-height: 300px; background: none; border: none;
+    color: var(--text); font-size: 0.9rem; line-height: 1.6; resize: vertical;
+    outline: none; font-family: inherit;
+  }
+  .editor-actions { display: flex; gap: 8px; justify-content: flex-end; }
+
+  /* Layout */
+  .main { display: grid; grid-template-columns: 280px 1fr; gap: 16px; }
+  @media (max-width: 640px) {
+    .main { grid-template-columns: 1fr; }
+    .sidebar.hidden-mobile { display: none; }
+  }
+  .sidebar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  .sidebar-header h3 { font-size: 0.9rem; color: var(--text-dim); }
+  .empty-state { text-align: center; padding: 40px 16px; color: var(--text-dim); }
+  .empty-state p { font-size: 0.9rem; margin-bottom: 12px; }
+
+  /* Status bar */
+  .status-bar {
+    display: flex; align-items: center; gap: 8px; padding: 8px 0;
+    font-size: 0.78rem; color: var(--text-dim); border-top: 1px solid var(--border);
+    margin-top: 16px;
+  }
+  .status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--success); }
+  .status-dot.offline { background: var(--danger); }
+
+  /* Search */
+  .search-input {
+    width: 100%; padding: 7px 10px; border-radius: 6px; margin-bottom: 10px;
+    border: 1px solid var(--border); background: var(--bg); color: var(--text);
+    font-size: 0.85rem;
+  }
+  .search-input:focus { outline: none; border-color: var(--accent); }
+</style>
+</head>
+<body>
+<div class="app" id="app"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+const REPO = 'FOLKS-iwd/live-notes';
+const FILE = 'notes.json';
+const API = 'https://api.github.com';
+
+let state = {
+  token: null,
+  notes: [],
+  sha: null,
+  activeId: null,
+  dirty: false,
+  search: ''
+};
+
+// Storage
+function getToken() {
+  try { return localStorage.getItem('ln_token'); } catch { return null; }
+}
+function setToken(t) {
+  try { localStorage.setItem('ln_token', t); } catch {}
+}
+function clearToken() {
+  try { localStorage.removeItem('ln_token'); } catch {}
+}
+
+// Toast
+function toast(msg, type='success') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'toast ' + type;
+  setTimeout(() => el.classList.add('show'), 10);
+  setTimeout(() => el.classList.remove('show'), 2500);
+}
+
+// GitHub API
+async function apiFetch(path, opts={}) {
+  const res = await fetch(API + path, {
+    ...opts,
+    headers: {
+      'Authorization': 'Bearer ' + state.token,
+      'Accept': 'application/vnd.github+json',
+      ...(opts.headers || {})
+    }
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || res.statusText);
+  }
+  return res.json();
+}
+
+async function loadNotes() {
+  try {
+    const data = await apiFetch(`/repos/${REPO}/contents/${FILE}`);
+    state.sha = data.sha;
+    state.notes = JSON.parse(atob(data.content.replace(/\n/g, '')));
+  } catch (e) {
+    if (e.message.includes('Not Found')) {
+      state.notes = [];
+      state.sha = null;
+    } else throw e;
+  }
+}
+
+async function saveNotes() {
+  const body = {
+    message: `notes: ${new Date().toISOString().slice(0,16)}`,
+    content: btoa(unescape(encodeURIComponent(JSON.stringify(state.notes, null, 2)))),
+  };
+  if (state.sha) body.sha = state.sha;
+  const res = await apiFetch(`/repos/${REPO}/contents/${FILE}`, {
+    method: 'PUT',
+    body: JSON.stringify(body)
+  });
+  state.sha = res.content.sha;
+  state.dirty = false;
+}
+
+// Note helpers
+function genId() { return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
+
+function activeNote() { return state.notes.find(n => n.id === state.activeId); }
+
+function filteredNotes() {
+  const q = state.search.toLowerCase();
+  if (!q) return state.notes;
+  return state.notes.filter(n =>
+    n.title.toLowerCase().includes(q) || n.body.toLowerCase().includes(q)
+  );
+}
+
+// Render
+function render() {
+  const app = document.getElementById('app');
+  if (!state.token) {
+    app.innerHTML = renderSetup();
+    return;
+  }
+  const note = activeNote();
+  app.innerHTML = `
+    <div class="header">
+      <h1><span>></span> Live Notes</h1>
+      <div class="header-actions">
+        <button class="btn btn-sm" onclick="syncNotes()">Sync</button>
+        <button class="btn btn-sm btn-danger" onclick="logout()">Logout</button>
+      </div>
+    </div>
+    <div class="main">
+      <div class="sidebar ${note ? 'hidden-mobile' : ''}">
+        <div class="sidebar-header">
+          <h3>${state.notes.length} note${state.notes.length !== 1 ? 's' : ''}</h3>
+          <button class="btn btn-sm btn-primary" onclick="newNote()">+ New</button>
+        </div>
+        <input class="search-input" placeholder="Search..." value="${state.search}"
+          oninput="state.search=this.value; render()">
+        <div class="notes-list">
+          ${filteredNotes().sort((a,b) => b.updated - a.updated).map(n => `
+            <div class="note-card ${n.id===state.activeId?'active':''}" onclick="openNote('${n.id}')">
+              <div class="note-card-title">${esc(n.title || 'Untitled')}</div>
+              <div class="note-card-preview">${esc(n.body.slice(0,80) || 'Empty note')}</div>
+              <div class="note-card-meta">${timeAgo(n.updated)}</div>
+            </div>
+          `).join('')}
+          ${filteredNotes().length === 0 ? '<div class="empty-state"><p>No notes yet</p></div>' : ''}
+        </div>
+      </div>
+      <div>
+        ${note ? renderEditor(note) : '<div class="empty-state"><p>Select a note or create a new one</p></div>'}
+      </div>
+    </div>
+    <div class="status-bar">
+      <div class="status-dot ${state.dirty ? 'offline' : ''}"></div>
+      <span>${state.dirty ? 'Unsaved changes' : 'All saved'}</span>
+    </div>
+  `;
+}
+
+function renderSetup() {
+  return `
+    <div class="setup">
+      <h2>Connect to GitHub</h2>
+      <p>Enter a Personal Access Token with <strong>repo</strong> scope (or fine-grained with Contents read/write on <code>live-notes</code>).</p>
+      <input type="password" id="pat" placeholder="ghp_... or github_pat_...">
+      <button class="btn btn-primary" style="width:100%" onclick="connect()">Connect</button>
+      <p style="margin-top:14px; font-size:0.8rem;">Token stays in this browser only. Create one at <a href="https://github.com/settings/tokens" style="color:var(--accent)">github.com/settings/tokens</a>.</p>
+    </div>
+  `;
+}
+
+function renderEditor(note) {
+  return `
+    <div class="editor">
+      <input class="editor-title" value="${esc(note.title)}" placeholder="Title..."
+        oninput="updateNote('title', this.value)">
+      <textarea class="editor-body" placeholder="Write something..."
+        oninput="updateNote('body', this.value)">${esc(note.body)}</textarea>
+    </div>
+    <div class="editor-actions">
+      <button class="btn btn-danger btn-sm" onclick="deleteNote('${note.id}')">Delete</button>
+      <button class="btn btn-sm" onclick="state.activeId=null; render()">Close</button>
+      <button class="btn btn-primary btn-sm" onclick="save()">Save</button>
+    </div>
+  `;
+}
+
+function esc(s) {
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+function timeAgo(ts) {
+  const s = Math.floor((Date.now() - ts) / 1000);
+  if (s < 60) return 'just now';
+  if (s < 3600) return Math.floor(s/60) + 'm ago';
+  if (s < 86400) return Math.floor(s/3600) + 'h ago';
+  return new Date(ts).toLocaleDateString();
+}
+
+// Actions
+async function connect() {
+  const pat = document.getElementById('pat').value.trim();
+  if (!pat) return;
+  state.token = pat;
+  try {
+    await loadNotes();
+    setToken(pat);
+    toast('Connected');
+    render();
+  } catch (e) {
+    state.token = null;
+    toast('Auth failed: ' + e.message, 'error');
+  }
+}
+
+function logout() {
+  clearToken();
+  state.token = null;
+  state.notes = [];
+  state.sha = null;
+  state.activeId = null;
+  render();
+}
+
+function newNote() {
+  const note = { id: genId(), title: '', body: '', created: Date.now(), updated: Date.now() };
+  state.notes.unshift(note);
+  state.activeId = note.id;
+  state.dirty = true;
+  render();
+  document.querySelector('.editor-title')?.focus();
+}
+
+function openNote(id) {
+  state.activeId = id;
+  render();
+}
+
+function updateNote(field, value) {
+  const note = activeNote();
+  if (!note) return;
+  note[field] = value;
+  note.updated = Date.now();
+  state.dirty = true;
+}
+
+async function deleteNote(id) {
+  state.notes = state.notes.filter(n => n.id !== id);
+  state.activeId = null;
+  state.dirty = true;
+  await save();
+}
+
+async function save() {
+  try {
+    await saveNotes();
+    toast('Saved');
+    render();
+  } catch (e) {
+    toast('Save failed: ' + e.message, 'error');
+  }
+}
+
+async function syncNotes() {
+  try {
+    await loadNotes();
+    toast('Synced');
+    render();
+  } catch (e) {
+    toast('Sync failed: ' + e.message, 'error');
+  }
+}
+
+// Keyboard shortcut
+document.addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+    e.preventDefault();
+    if (state.dirty) save();
+  }
+});
+
+// Init
+(async function init() {
+  state.token = getToken();
+  if (state.token) {
+    try {
+      await loadNotes();
+    } catch {
+      state.token = null;
+      clearToken();
+    }
+  }
+  render();
+})();
+</script>
+</body>
+</html>
