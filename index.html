@@ -4,410 +4,378 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Live Notes</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap">
 <style>
   :root {
-    --bg: #0d1117;
-    --surface: #161b22;
-    --border: #30363d;
-    --text: #e6edf3;
-    --text-dim: #8b949e;
-    --accent: #58a6ff;
-    --accent-hover: #79c0ff;
-    --danger: #f85149;
-    --success: #3fb950;
-    --shadow: rgba(0,0,0,0.3);
+    --bg: #0f0f0e;
+    --surface: #1a1918;
+    --surface-alt: #242320;
+    --border: #333129;
+    --text: #e8e6e0;
+    --text-dim: #7a776e;
+    --accent: #52b788;
+    --accent-dim: #1e3a2a;
+    --danger: #e5625a;
+    --mono: 'IBM Plex Mono', 'Menlo', monospace;
+    --sans: 'Inter', system-ui, sans-serif;
   }
-  * { margin:0; padding:0; box-sizing:border-box; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+    font-family: var(--sans);
     background: var(--bg);
     color: var(--text);
     min-height: 100vh;
+    padding: 0 16px;
   }
-  .app { max-width: 900px; margin: 0 auto; padding: 16px; }
+  .app { max-width: 800px; margin: 0 auto; }
 
-  /* Header */
   .header {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 16px 0; border-bottom: 1px solid var(--border); margin-bottom: 16px;
+    display: flex; align-items: baseline; justify-content: space-between;
+    padding: 24px 0 14px; border-bottom: 1px solid var(--border);
   }
-  .header h1 { font-size: 1.4rem; font-weight: 600; }
-  .header h1 span { color: var(--accent); }
-  .header-actions { display: flex; gap: 8px; }
+  .header h1 {
+    font-family: var(--mono); font-size: 0.9rem; font-weight: 600;
+    color: var(--text-dim); letter-spacing: 0.03em;
+  }
+  .header h1 b { color: var(--accent); }
+  .header-right { display: flex; gap: 8px; align-items: center; }
+  .count {
+    font-family: var(--mono); font-size: 0.72rem; color: var(--text-dim);
+    font-variant-numeric: tabular-nums;
+  }
 
-  /* Buttons */
-  .btn {
-    padding: 6px 14px; border-radius: 6px; border: 1px solid var(--border);
-    background: var(--surface); color: var(--text); cursor: pointer;
-    font-size: 0.85rem; transition: all 0.15s;
-  }
-  .btn:hover { border-color: var(--accent); color: var(--accent); }
-  .btn-primary { background: var(--accent); color: #fff; border-color: var(--accent); }
-  .btn-primary:hover { background: var(--accent-hover); }
-  .btn-danger { color: var(--danger); }
-  .btn-danger:hover { border-color: var(--danger); background: rgba(248,81,73,0.1); }
-  .btn-sm { padding: 4px 10px; font-size: 0.8rem; }
-
-  /* Setup screen */
-  .setup {
-    max-width: 480px; margin: 80px auto; padding: 32px;
-    background: var(--surface); border-radius: 12px; border: 1px solid var(--border);
-  }
-  .setup h2 { margin-bottom: 8px; font-size: 1.2rem; }
-  .setup p { color: var(--text-dim); font-size: 0.9rem; margin-bottom: 20px; line-height: 1.5; }
-  .setup input {
-    width: 100%; padding: 10px 12px; border-radius: 6px;
-    border: 1px solid var(--border); background: var(--bg); color: var(--text);
-    font-size: 0.9rem; margin-bottom: 12px; font-family: monospace;
-  }
-  .setup input:focus { outline: none; border-color: var(--accent); }
-
-  /* Toast */
-  .toast {
-    position: fixed; bottom: 20px; right: 20px; padding: 10px 18px;
-    border-radius: 8px; font-size: 0.85rem; z-index: 100;
-    transform: translateY(80px); opacity: 0; transition: all 0.3s;
-  }
-  .toast.show { transform: translateY(0); opacity: 1; }
-  .toast.success { background: var(--success); color: #fff; }
-  .toast.error { background: var(--danger); color: #fff; }
-
-  /* Notes list */
-  .notes-list { display: flex; flex-direction: column; gap: 8px; }
-  .note-card {
-    background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
-    padding: 14px 16px; cursor: pointer; transition: all 0.15s;
-  }
-  .note-card:hover { border-color: var(--accent); }
-  .note-card.active { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
-  .note-card-title { font-weight: 600; font-size: 0.95rem; margin-bottom: 4px; }
-  .note-card-preview { color: var(--text-dim); font-size: 0.82rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .note-card-meta { color: var(--text-dim); font-size: 0.75rem; margin-top: 6px; }
-
-  /* Editor */
-  .editor {
-    background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
-    padding: 16px; margin-bottom: 12px;
-  }
-  .editor-title {
-    width: 100%; background: none; border: none; color: var(--text);
-    font-size: 1.1rem; font-weight: 600; margin-bottom: 10px; outline: none;
-    border-bottom: 1px solid var(--border); padding-bottom: 8px;
-  }
-  .editor-body {
-    width: 100%; min-height: 300px; background: none; border: none;
-    color: var(--text); font-size: 0.9rem; line-height: 1.6; resize: vertical;
-    outline: none; font-family: inherit;
-  }
-  .editor-actions { display: flex; gap: 8px; justify-content: flex-end; }
-
-  /* Layout */
-  .main { display: grid; grid-template-columns: 280px 1fr; gap: 16px; }
-  @media (max-width: 640px) {
-    .main { grid-template-columns: 1fr; }
-    .sidebar.hidden-mobile { display: none; }
-  }
-  .sidebar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-  .sidebar-header h3 { font-size: 0.9rem; color: var(--text-dim); }
-  .empty-state { text-align: center; padding: 40px 16px; color: var(--text-dim); }
-  .empty-state p { font-size: 0.9rem; margin-bottom: 12px; }
-
-  /* Status bar */
-  .status-bar {
-    display: flex; align-items: center; gap: 8px; padding: 8px 0;
-    font-size: 0.78rem; color: var(--text-dim); border-top: 1px solid var(--border);
-    margin-top: 16px;
-  }
-  .status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--success); }
-  .status-dot.offline { background: var(--danger); }
-
-  /* Search */
-  .search-input {
-    width: 100%; padding: 7px 10px; border-radius: 6px; margin-bottom: 10px;
-    border: 1px solid var(--border); background: var(--bg); color: var(--text);
+  .toolbar { display: flex; gap: 8px; padding: 12px 0; }
+  .search {
+    flex: 1; padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px;
+    background: var(--surface); color: var(--text); font-family: var(--sans);
     font-size: 0.85rem;
   }
-  .search-input:focus { outline: none; border-color: var(--accent); }
+  .search::placeholder { color: var(--text-dim); }
+  .search:focus { outline: none; border-color: var(--accent); }
+
+  .btn {
+    padding: 8px 14px; border: 1px solid var(--border); border-radius: 6px;
+    background: var(--surface); color: var(--text); font-family: var(--mono);
+    font-size: 0.78rem; font-weight: 500; cursor: pointer; white-space: nowrap;
+    transition: border-color 0.12s, color 0.12s;
+  }
+  .btn:hover { border-color: var(--accent); color: var(--accent); }
+  .btn-accent { background: var(--accent); color: #0f0f0e; border-color: var(--accent); }
+  .btn-accent:hover { filter: brightness(1.1); color: #0f0f0e; }
+  .btn-danger:hover { border-color: var(--danger); color: var(--danger); }
+  .btn-sm { padding: 4px 10px; font-size: 0.72rem; }
+  .btn-icon {
+    padding: 6px 8px; background: none; border: none; color: var(--text-dim);
+    cursor: pointer; font-size: 1rem;
+  }
+  .btn-icon:hover { color: var(--accent); }
+
+  .notes { display: flex; flex-direction: column; gap: 1px; padding-top: 4px; }
+  .note-row {
+    display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: baseline;
+    padding: 10px 12px; border-radius: 5px; cursor: pointer; transition: background 0.1s;
+  }
+  .note-row:hover { background: var(--surface-alt); }
+  .note-row.active { background: var(--accent-dim); }
+  .note-name { font-size: 0.88rem; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .note-name.empty { color: var(--text-dim); font-style: italic; }
+  .note-time { font-family: var(--mono); font-size: 0.7rem; color: var(--text-dim); font-variant-numeric: tabular-nums; }
+
+  .editor {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+    margin-top: 10px;
+  }
+  .ed-head {
+    display: flex; align-items: center; gap: 8px; padding: 8px 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .ed-title {
+    flex: 1; border: none; background: none; color: var(--text);
+    font-family: var(--sans); font-size: 0.95rem; font-weight: 600; outline: none;
+  }
+  .ed-title::placeholder { color: var(--text-dim); font-weight: 400; }
+  .ed-body {
+    width: 100%; min-height: 240px; padding: 12px; border: none; background: none;
+    color: var(--text); font-family: var(--sans); font-size: 0.86rem;
+    line-height: 1.7; resize: vertical; outline: none;
+  }
+  .ed-foot {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 6px 12px; border-top: 1px solid var(--border);
+  }
+  .ed-status { font-family: var(--mono); font-size: 0.7rem; color: var(--text-dim); }
+
+  .empty { text-align: center; padding: 48px 16px; color: var(--text-dim); font-size: 0.85rem; }
+
+  .toast {
+    position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(50px);
+    padding: 7px 16px; border-radius: 6px; font-family: var(--mono); font-size: 0.75rem;
+    background: var(--accent); color: #0f0f0e; opacity: 0; transition: all 0.2s; z-index: 50;
+  }
+  .toast.err { background: var(--danger); color: #fff; }
+  .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+  /* PAT modal */
+  .modal-bg {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 40;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .modal {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+    padding: 24px; max-width: 420px; width: 90%;
+  }
+  .modal h3 { font-size: 0.95rem; margin-bottom: 6px; }
+  .modal p { font-size: 0.8rem; color: var(--text-dim); line-height: 1.5; margin-bottom: 14px; }
+  .modal input {
+    width: 100%; padding: 9px 12px; border: 1px solid var(--border); border-radius: 6px;
+    background: var(--bg); color: var(--text); font-family: var(--mono); font-size: 0.82rem;
+    margin-bottom: 10px;
+  }
+  .modal input:focus { outline: none; border-color: var(--accent); }
+  .modal-btns { display: flex; gap: 8px; justify-content: flex-end; }
+
+  @media (max-width: 500px) {
+    .ed-body { min-height: 180px; }
+  }
 </style>
 </head>
 <body>
-<div class="app" id="app"></div>
+<div class="app" id="app"><div class="empty">Loading...</div></div>
 <div class="toast" id="toast"></div>
 
 <script>
 const REPO = 'FOLKS-iwd/live-notes';
 const FILE = 'notes.json';
 const API = 'https://api.github.com';
+const RAW = 'https://raw.githubusercontent.com/' + REPO + '/main/' + FILE;
 
-let state = {
-  token: null,
-  notes: [],
-  sha: null,
-  activeId: null,
-  dirty: false,
-  search: ''
-};
+let notes = [];
+let sha = null;
+let activeId = null;
+let search = '';
+let saveTimer = null;
 
-// Storage
-function getToken() {
-  try { return localStorage.getItem('ln_token'); } catch { return null; }
-}
-function setToken(t) {
-  try { localStorage.setItem('ln_token', t); } catch {}
-}
-function clearToken() {
-  try { localStorage.removeItem('ln_token'); } catch {}
-}
+function getToken() { try { return localStorage.getItem('ln_pat'); } catch { return null; } }
+function setToken(t) { try { localStorage.setItem('ln_pat', t); } catch {} }
+function clearToken() { try { localStorage.removeItem('ln_pat'); } catch {} }
 
-// Toast
-function toast(msg, type='success') {
+function toast(msg, err) {
   const el = document.getElementById('toast');
   el.textContent = msg;
-  el.className = 'toast ' + type;
+  el.className = 'toast' + (err ? ' err' : '');
+  clearTimeout(el._t);
   setTimeout(() => el.classList.add('show'), 10);
-  setTimeout(() => el.classList.remove('show'), 2500);
+  el._t = setTimeout(() => el.classList.remove('show'), 1800);
 }
 
-// GitHub API
-async function apiFetch(path, opts={}) {
-  const res = await fetch(API + path, {
-    ...opts,
-    headers: {
-      'Authorization': 'Bearer ' + state.token,
-      'Accept': 'application/vnd.github+json',
-      ...(opts.headers || {})
-    }
-  });
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(err.message || res.statusText);
-  }
-  return res.json();
+function esc(s) { const d = document.createElement('span'); d.textContent = s || ''; return d.innerHTML; }
+function genId() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
+
+function fmtTime(ts) {
+  if (!ts) return '';
+  const s = Math.floor((Date.now() - ts) / 1000);
+  if (s < 60) return 'now';
+  if (s < 3600) return Math.floor(s / 60) + 'm';
+  if (s < 86400) return Math.floor(s / 3600) + 'h';
+  return new Date(ts).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });
 }
 
+// Read notes — public, no auth needed
 async function loadNotes() {
+  const cacheBust = '?t=' + Date.now();
   try {
-    const data = await apiFetch(`/repos/${REPO}/contents/${FILE}`);
-    state.sha = data.sha;
-    state.notes = JSON.parse(atob(data.content.replace(/\n/g, '')));
-  } catch (e) {
-    if (e.message.includes('Not Found')) {
-      state.notes = [];
-      state.sha = null;
-    } else throw e;
+    const res = await fetch(RAW + cacheBust);
+    if (res.ok) {
+      notes = await res.json();
+    } else if (res.status === 404) {
+      notes = [];
+    }
+  } catch { /* offline, keep current */ }
+  // Also get sha for writes
+  const token = getToken();
+  if (token) {
+    try {
+      const meta = await fetch(API + '/repos/' + REPO + '/contents/' + FILE, {
+        headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/vnd.github+json' }
+      });
+      if (meta.ok) { sha = (await meta.json()).sha; }
+    } catch {}
   }
 }
 
+// Write notes — needs PAT
 async function saveNotes() {
+  const token = getToken();
+  if (!token) { showPatModal(); return; }
   const body = {
-    message: `notes: ${new Date().toISOString().slice(0,16)}`,
-    content: btoa(unescape(encodeURIComponent(JSON.stringify(state.notes, null, 2)))),
+    message: 'notes ' + new Date().toISOString().slice(0, 16),
+    content: btoa(unescape(encodeURIComponent(JSON.stringify(notes, null, 2)))),
   };
-  if (state.sha) body.sha = state.sha;
-  const res = await apiFetch(`/repos/${REPO}/contents/${FILE}`, {
+  if (sha) body.sha = sha;
+  const res = await fetch(API + '/repos/' + REPO + '/contents/' + FILE, {
     method: 'PUT',
+    headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/vnd.github+json' },
     body: JSON.stringify(body)
   });
-  state.sha = res.content.sha;
-  state.dirty = false;
-}
-
-// Note helpers
-function genId() { return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
-
-function activeNote() { return state.notes.find(n => n.id === state.activeId); }
-
-function filteredNotes() {
-  const q = state.search.toLowerCase();
-  if (!q) return state.notes;
-  return state.notes.filter(n =>
-    n.title.toLowerCase().includes(q) || n.body.toLowerCase().includes(q)
-  );
-}
-
-// Render
-function render() {
-  const app = document.getElementById('app');
-  if (!state.token) {
-    app.innerHTML = renderSetup();
-    return;
+  if (!res.ok) {
+    if (res.status === 401 || res.status === 403) {
+      clearToken();
+      showPatModal();
+      return;
+    }
+    throw new Error('Save failed');
   }
-  const note = activeNote();
-  app.innerHTML = `
-    <div class="header">
-      <h1><span>></span> Live Notes</h1>
-      <div class="header-actions">
-        <button class="btn btn-sm" onclick="syncNotes()">Sync</button>
-        <button class="btn btn-sm btn-danger" onclick="logout()">Logout</button>
+  const data = await res.json();
+  sha = data.content.sha;
+}
+
+function debounceSave() {
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(async () => {
+    try { await saveNotes(); toast('saved'); } catch { toast('save failed', true); }
+    render();
+  }, 800);
+}
+
+function showPatModal() {
+  let existing = document.getElementById('pat-modal');
+  if (existing) return;
+  const div = document.createElement('div');
+  div.id = 'pat-modal';
+  div.className = 'modal-bg';
+  div.innerHTML = `
+    <div class="modal">
+      <h3>One-time setup</h3>
+      <p>Paste a GitHub PAT with <b>Contents read/write</b> on the live-notes repo. Stored in this browser only, never sent anywhere else.</p>
+      <input type="password" id="pat-input" placeholder="ghp_... or github_pat_...">
+      <div class="modal-btns">
+        <button class="btn btn-sm" id="pat-cancel">cancel</button>
+        <button class="btn btn-accent btn-sm" id="pat-save">save</button>
       </div>
     </div>
-    <div class="main">
-      <div class="sidebar ${note ? 'hidden-mobile' : ''}">
-        <div class="sidebar-header">
-          <h3>${state.notes.length} note${state.notes.length !== 1 ? 's' : ''}</h3>
-          <button class="btn btn-sm btn-primary" onclick="newNote()">+ New</button>
-        </div>
-        <input class="search-input" placeholder="Search..." value="${state.search}"
-          oninput="state.search=this.value; render()">
-        <div class="notes-list">
-          ${filteredNotes().sort((a,b) => b.updated - a.updated).map(n => `
-            <div class="note-card ${n.id===state.activeId?'active':''}" onclick="openNote('${n.id}')">
-              <div class="note-card-title">${esc(n.title || 'Untitled')}</div>
-              <div class="note-card-preview">${esc(n.body.slice(0,80) || 'Empty note')}</div>
-              <div class="note-card-meta">${timeAgo(n.updated)}</div>
-            </div>
-          `).join('')}
-          ${filteredNotes().length === 0 ? '<div class="empty-state"><p>No notes yet</p></div>' : ''}
-        </div>
-      </div>
-      <div>
-        ${note ? renderEditor(note) : '<div class="empty-state"><p>Select a note or create a new one</p></div>'}
-      </div>
-    </div>
-    <div class="status-bar">
-      <div class="status-dot ${state.dirty ? 'offline' : ''}"></div>
-      <span>${state.dirty ? 'Unsaved changes' : 'All saved'}</span>
-    </div>
   `;
-}
-
-function renderSetup() {
-  return `
-    <div class="setup">
-      <h2>Connect to GitHub</h2>
-      <p>Enter a Personal Access Token with <strong>repo</strong> scope (or fine-grained with Contents read/write on <code>live-notes</code>).</p>
-      <input type="password" id="pat" placeholder="ghp_... or github_pat_...">
-      <button class="btn btn-primary" style="width:100%" onclick="connect()">Connect</button>
-      <p style="margin-top:14px; font-size:0.8rem;">Token stays in this browser only. Create one at <a href="https://github.com/settings/tokens" style="color:var(--accent)">github.com/settings/tokens</a>.</p>
-    </div>
-  `;
-}
-
-function renderEditor(note) {
-  return `
-    <div class="editor">
-      <input class="editor-title" value="${esc(note.title)}" placeholder="Title..."
-        oninput="updateNote('title', this.value)">
-      <textarea class="editor-body" placeholder="Write something..."
-        oninput="updateNote('body', this.value)">${esc(note.body)}</textarea>
-    </div>
-    <div class="editor-actions">
-      <button class="btn btn-danger btn-sm" onclick="deleteNote('${note.id}')">Delete</button>
-      <button class="btn btn-sm" onclick="state.activeId=null; render()">Close</button>
-      <button class="btn btn-primary btn-sm" onclick="save()">Save</button>
-    </div>
-  `;
-}
-
-function esc(s) {
-  const d = document.createElement('div');
-  d.textContent = s;
-  return d.innerHTML;
-}
-
-function timeAgo(ts) {
-  const s = Math.floor((Date.now() - ts) / 1000);
-  if (s < 60) return 'just now';
-  if (s < 3600) return Math.floor(s/60) + 'm ago';
-  if (s < 86400) return Math.floor(s/3600) + 'h ago';
-  return new Date(ts).toLocaleDateString();
-}
-
-// Actions
-async function connect() {
-  const pat = document.getElementById('pat').value.trim();
-  if (!pat) return;
-  state.token = pat;
-  try {
-    await loadNotes();
-    setToken(pat);
-    toast('Connected');
-    render();
-  } catch (e) {
-    state.token = null;
-    toast('Auth failed: ' + e.message, 'error');
-  }
-}
-
-function logout() {
-  clearToken();
-  state.token = null;
-  state.notes = [];
-  state.sha = null;
-  state.activeId = null;
-  render();
-}
-
-function newNote() {
-  const note = { id: genId(), title: '', body: '', created: Date.now(), updated: Date.now() };
-  state.notes.unshift(note);
-  state.activeId = note.id;
-  state.dirty = true;
-  render();
-  document.querySelector('.editor-title')?.focus();
-}
-
-function openNote(id) {
-  state.activeId = id;
-  render();
-}
-
-function updateNote(field, value) {
-  const note = activeNote();
-  if (!note) return;
-  note[field] = value;
-  note.updated = Date.now();
-  state.dirty = true;
-}
-
-async function deleteNote(id) {
-  state.notes = state.notes.filter(n => n.id !== id);
-  state.activeId = null;
-  state.dirty = true;
-  await save();
-}
-
-async function save() {
-  try {
-    await saveNotes();
-    toast('Saved');
-    render();
-  } catch (e) {
-    toast('Save failed: ' + e.message, 'error');
-  }
-}
-
-async function syncNotes() {
-  try {
-    await loadNotes();
-    toast('Synced');
-    render();
-  } catch (e) {
-    toast('Sync failed: ' + e.message, 'error');
-  }
-}
-
-// Keyboard shortcut
-document.addEventListener('keydown', e => {
-  if ((e.ctrlKey || e.metaKey) && e.key === 's') {
-    e.preventDefault();
-    if (state.dirty) save();
-  }
-});
-
-// Init
-(async function init() {
-  state.token = getToken();
-  if (state.token) {
+  document.body.appendChild(div);
+  document.getElementById('pat-cancel').onclick = () => div.remove();
+  document.getElementById('pat-save').onclick = async () => {
+    const val = document.getElementById('pat-input').value.trim();
+    if (!val) return;
+    setToken(val);
+    div.remove();
     try {
       await loadNotes();
+      await saveNotes();
+      toast('connected');
+      render();
     } catch {
-      state.token = null;
       clearToken();
+      toast('bad token', true);
     }
+  };
+  document.getElementById('pat-input').focus();
+}
+
+function filtered() {
+  const q = search.toLowerCase();
+  let list = notes.slice().sort((a, b) => (b.updated || 0) - (a.updated || 0));
+  if (q) list = list.filter(n => (n.title || '').toLowerCase().includes(q) || (n.body || '').toLowerCase().includes(q));
+  return list;
+}
+
+function render() {
+  const app = document.getElementById('app');
+  const active = notes.find(n => n.id === activeId);
+  const list = filtered();
+  const hasToken = !!getToken();
+
+  app.innerHTML = `
+    <div class="header">
+      <h1><b>notes</b>.live</h1>
+      <div class="header-right">
+        <span class="count">${notes.length}</span>
+        <button class="btn-icon" id="btn-sync" title="Sync">&#x21bb;</button>
+        ${hasToken
+          ? '<button class="btn-icon" id="btn-logout" title="Clear token">&#x2715;</button>'
+          : '<button class="btn-icon" id="btn-key" title="Set token">&#x1f511;</button>'
+        }
+      </div>
+    </div>
+    <div class="toolbar">
+      <input class="search" placeholder="search..." value="${esc(search)}" id="search-input">
+      <button class="btn btn-accent" id="btn-new">+ new</button>
+    </div>
+    <div class="notes" id="note-list">
+      ${list.map(n => `
+        <div class="note-row ${n.id === activeId ? 'active' : ''}" data-id="${n.id}">
+          <span class="note-name ${n.title ? '' : 'empty'}">${esc(n.title || 'untitled')}</span>
+          <span class="note-time">${fmtTime(n.updated)}</span>
+        </div>
+      `).join('')}
+      ${list.length === 0 && notes.length > 0 ? '<div class="empty">No matches</div>' : ''}
+      ${notes.length === 0 ? '<div class="empty">No notes yet</div>' : ''}
+    </div>
+    ${active ? `
+      <div class="editor">
+        <div class="ed-head">
+          <input class="ed-title" value="${esc(active.title)}" placeholder="Title..." id="ed-title">
+          <button class="btn btn-sm btn-danger" id="btn-del">del</button>
+          <button class="btn btn-sm" id="btn-close">close</button>
+        </div>
+        <textarea class="ed-body" id="ed-body" placeholder="...">${esc(active.body)}</textarea>
+        <div class="ed-foot">
+          <span class="ed-status">${fmtTime(active.updated)}</span>
+          <span class="ed-status">ctrl+s to force save</span>
+        </div>
+      </div>
+    ` : ''}
+  `;
+
+  // Events
+  document.getElementById('search-input').addEventListener('input', e => { search = e.target.value; render(); });
+  document.getElementById('btn-new').addEventListener('click', createNote);
+  document.getElementById('btn-sync').addEventListener('click', async () => { await loadNotes(); toast('synced'); render(); });
+
+  const logoutBtn = document.getElementById('btn-logout');
+  if (logoutBtn) logoutBtn.addEventListener('click', () => { clearToken(); toast('token cleared'); render(); });
+  const keyBtn = document.getElementById('btn-key');
+  if (keyBtn) keyBtn.addEventListener('click', showPatModal);
+
+  document.querySelectorAll('.note-row').forEach(row => {
+    row.addEventListener('click', () => { activeId = row.dataset.id; render(); document.getElementById('ed-title')?.focus(); });
+  });
+
+  if (active) {
+    document.getElementById('ed-title').addEventListener('input', function() {
+      active.title = this.value; active.updated = Date.now(); debounceSave();
+    });
+    document.getElementById('ed-body').addEventListener('input', function() {
+      active.body = this.value; active.updated = Date.now(); debounceSave();
+    });
+    document.getElementById('btn-del').addEventListener('click', async () => {
+      notes = notes.filter(n => n.id !== activeId);
+      activeId = null;
+      try { await saveNotes(); toast('deleted'); } catch { toast('delete failed', true); }
+      render();
+    });
+    document.getElementById('btn-close').addEventListener('click', () => { activeId = null; render(); });
   }
+}
+
+async function createNote() {
+  if (!getToken()) { showPatModal(); return; }
+  const id = genId();
+  notes.unshift({ id, title: '', body: '', created: Date.now(), updated: Date.now() });
+  activeId = id;
   render();
-})();
+  debounceSave();
+  document.getElementById('ed-title')?.focus();
+}
+
+document.addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && e.key === 's') { e.preventDefault(); clearTimeout(saveTimer); saveNotes().then(() => { toast('saved'); render(); }).catch(() => toast('save failed', true)); }
+  if (e.key === 'Escape' && activeId) { activeId = null; render(); }
+});
+
+(async () => { await loadNotes(); render(); })();
 </script>
 </body>
 </html>
