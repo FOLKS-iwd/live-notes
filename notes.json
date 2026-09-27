@@ -9,9 +9,9 @@
   {
     "id": "mtzkdmbss2788",
     "title": "ttp",
-    "body": "\nSet-ExecutionPolicy Bypass -Scope Process -Force\n& \".\\T1068_BYOVD_PrivEsc.ps1\"",
+    "body": "Technique ID2\nT0819\nT1027.003\nT1059.009\nT1071.002\nT1098.001\nT1098.002\nT1098.003\nT1098.006\nT1480.001\nT1496.003\nT1499.001\nT1499.002\nT1528\nT1543.002\nT1547.003\nT1547.006\nT1547.008\nT1547.010\nT1547.012\nT1547.013\nT1547.014\nT1556.006\nT1587.001\nT1678\n",
     "created": 1789288841800,
-    "updated": 1789290807054
+    "updated": 1790498044306
   },
   {
     "id": "mtzk8lmzd2hch",
