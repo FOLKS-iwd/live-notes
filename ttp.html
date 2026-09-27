@@ -35,6 +35,8 @@
   .tag-persist { background:rgba(229,98,90,0.15); color:var(--red); }
   .tag-privesc { background:rgba(110,168,254,0.15); color:var(--blue); }
   .tag-exfil { background:rgba(82,183,136,0.15); color:var(--accent); }
+  .tag-evasion { background:rgba(160,120,200,0.15); color:#b088d0; }
+  .tag-cloud { background:rgba(100,180,255,0.15); color:#64b4ff; }
   .dl-btn { padding:8px 14px; background:var(--surface-alt); border:1px solid var(--border); border-radius:6px;
     color:var(--text); font-family:var(--mono); font-size:0.75rem; cursor:pointer; white-space:nowrap;
     text-decoration:none; display:inline-block; }
@@ -47,10 +49,10 @@
 <div class="app">
   <div class="header">
     <h1><b>CS TTP</b> test scripts</h1>
-    <p>6 aggressive detection tests — run as admin for max signal</p>
+    <p>18 aggressive detection tests — run as admin for max signal</p>
   </div>
 
-  <button class="dl-all" onclick="downloadAll()">Download all 6 scripts (.zip)</button>
+  <button class="dl-all" onclick="downloadAll()">Download all 18 scripts (.zip)</button>
 
   <div class="cards">
     <div class="card">
@@ -101,6 +103,102 @@
       </div>
       <a class="dl-btn" href="T1071.002_FTP_Exfil.ps1" download>download</a>
     </div>
+    <div class="card">
+      <div>
+        <div class="ttp-id"><span class="tag tag-evasion">EVASION</span> T1027.003</div>
+        <div class="ttp-name">Steganography</div>
+        <div class="ttp-signals">Payload in PNG/BMP, b64 encode, ADS hiding, certutil encode/decode</div>
+      </div>
+      <a class="dl-btn" href="T1027.003_Steganography.ps1" download>download</a>
+    </div>
+    <div class="card">
+      <div>
+        <div class="ttp-id"><span class="tag tag-cloud">CLOUD</span> T1059.009</div>
+        <div class="ttp-name">Cloud API Abuse</div>
+        <div class="ttp-signals">az/aws/gcloud/kubectl mass enum, IMDS token theft (Azure+AWS+GCP)</div>
+      </div>
+      <a class="dl-btn" href="T1059.009_CloudAPI.ps1" download>download</a>
+    </div>
+    <div class="card">
+      <div>
+        <div class="ttp-id"><span class="tag tag-cloud">CLOUD</span> T1098.001</div>
+        <div class="ttp-name">Additional Cloud Credentials</div>
+        <div class="ttp-signals">Backdoor SPs/users/access keys across Azure/AWS/GCP/K8s</div>
+      </div>
+      <a class="dl-btn" href="T1098.001_CloudCredentials.ps1" download>download</a>
+    </div>
+    <div class="card">
+      <div>
+        <div class="ttp-id"><span class="tag tag-cloud">CLOUD</span> T1098.003</div>
+        <div class="ttp-name">Additional Cloud Roles</div>
+        <div class="ttp-signals">Owner/GlobalAdmin/cluster-admin assign, AD group adds</div>
+      </div>
+      <a class="dl-btn" href="T1098.003_CloudRoles.ps1" download>download</a>
+    </div>
+    <div class="card">
+      <div>
+        <div class="ttp-id"><span class="tag tag-evasion">EVASION</span> T1480.001</div>
+        <div class="ttp-name">Environmental Keying</div>
+        <div class="ttp-signals">15 sandbox/debugger checks, anti-analysis APIs, timed beacon</div>
+      </div>
+      <a class="dl-btn" href="T1480.001_EnvironmentalKeying.ps1" download>download</a>
+    </div>
+    <div class="card">
+      <div>
+        <div class="ttp-id"><span class="tag tag-persist">PERSIST</span> T1543.002</div>
+        <div class="ttp-name">Malicious Windows Services</div>
+        <div class="ttp-signals">3 backdoor services (cmd/certutil/ps), schtask, svchost group</div>
+      </div>
+      <a class="dl-btn" href="T1543.002_SystemdService.ps1" download>download</a>
+    </div>
+    <div class="card">
+      <div>
+        <div class="ttp-id"><span class="tag tag-persist">PERSIST</span> T1547.003</div>
+        <div class="ttp-name">Time Providers</div>
+        <div class="ttp-signals">W32Time DLL hijack, registry provider, service restart</div>
+      </div>
+      <a class="dl-btn" href="T1547.003_TimeProviders.ps1" download>download</a>
+    </div>
+    <div class="card">
+      <div>
+        <div class="ttp-id"><span class="tag tag-persist">PERSIST</span> T1547.008</div>
+        <div class="ttp-name">LSASS Driver</div>
+        <div class="ttp-signals">LSA driver DLL, Security+Auth packages, AddSecurityPackage, LSASS handle</div>
+      </div>
+      <a class="dl-btn" href="T1547.008_LSASS_Driver.ps1" download>download</a>
+    </div>
+    <div class="card">
+      <div>
+        <div class="ttp-id"><span class="tag tag-persist">PERSIST</span> T1547.010</div>
+        <div class="ttp-name">Port Monitors</div>
+        <div class="ttp-signals">Print spooler port monitor DLL injection, AddMonitor API</div>
+      </div>
+      <a class="dl-btn" href="T1547.010_PortMonitors.ps1" download>download</a>
+    </div>
+    <div class="card">
+      <div>
+        <div class="ttp-id"><span class="tag tag-persist">PERSIST</span> T1547.012</div>
+        <div class="ttp-name">Print Processors</div>
+        <div class="ttp-signals">Print processor DLL in spool dir, AddPrintProcessor API</div>
+      </div>
+      <a class="dl-btn" href="T1547.012_PrintProcessors.ps1" download>download</a>
+    </div>
+    <div class="card">
+      <div>
+        <div class="ttp-id"><span class="tag tag-persist">PERSIST</span> T1547.014</div>
+        <div class="ttp-name">Active Setup</div>
+        <div class="ttp-signals">HKCU Active Setup + Run/RunOnce keys + mshta + encoded PS</div>
+      </div>
+      <a class="dl-btn" href="T1547.014_ActiveSetup.ps1" download>download</a>
+    </div>
+    <div class="card">
+      <div>
+        <div class="ttp-id"><span class="tag tag-cloud">CLOUD</span> T1556.006</div>
+        <div class="ttp-name">MFA Subversion</div>
+        <div class="ttp-signals">Azure/AWS/Okta MFA disable, TAP creation, conditional access backdoor</div>
+      </div>
+      <a class="dl-btn" href="T1556.006_MFA_Subvert.ps1" download>download</a>
+    </div>
   </div>
 
   <a class="back" href="./">&#8592; back to notes</a>
@@ -118,7 +216,19 @@ async function downloadAll() {
     'T1547.002_AuthPackage_Persistence.ps1',
     'T1547.005_SSP_Persistence.ps1',
     'T1528_StealAppToken.ps1',
-    'T1071.002_FTP_Exfil.ps1'
+    'T1071.002_FTP_Exfil.ps1',
+    'T1027.003_Steganography.ps1',
+    'T1059.009_CloudAPI.ps1',
+    'T1098.001_CloudCredentials.ps1',
+    'T1098.003_CloudRoles.ps1',
+    'T1480.001_EnvironmentalKeying.ps1',
+    'T1543.002_SystemdService.ps1',
+    'T1547.003_TimeProviders.ps1',
+    'T1547.008_LSASS_Driver.ps1',
+    'T1547.010_PortMonitors.ps1',
+    'T1547.012_PrintProcessors.ps1',
+    'T1547.014_ActiveSetup.ps1',
+    'T1556.006_MFA_Subvert.ps1'
   ];
   const base = 'https://raw.githubusercontent.com/FOLKS-iwd/live-notes/main/';
   const zip = new JSZip();
@@ -134,7 +244,7 @@ async function downloadAll() {
   a.href = url; a.download = 'cs-ttp-tests.zip';
   document.body.appendChild(a); a.click(); a.remove();
   URL.revokeObjectURL(url);
-  btn.textContent = 'Download all 6 scripts (.zip)';
+  btn.textContent = 'Download all 18 scripts (.zip)';
   btn.disabled = false;
 }
 </script>
