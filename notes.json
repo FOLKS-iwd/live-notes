@@ -9,9 +9,9 @@
   {
     "id": "mujtkfehbucpc",
     "title": "rep",
-    "body": "Hi Iheb,\n\nI checked the DMARC/SPF records for both Ã¢ÂÂ GLMW doesn't have any mail records, so it's just a typo in the ticket. The correct one is GLMX.\n\nTheir SPF record does include 204.26.58.0/23 as their mail range, so the IP checks out. We can approve and let Windows&O365 handle the allowlist.",
+    "body": "Hi Iheb,\n\nChecked the GLMX records for SR 666993 (GLMW in the ticket is a typo).\n\nThe IP range 204.26.58.0/23 is confirmed in their SPF record, so the request is legit. We can approve and let Windows&O365 push the allowlist.\n\nSide note: their DMARC is set to none and no DKIM configured, so their sender auth could be stronger, but that's on their side. Doesn't block us.",
     "created": 1790513599481,
-    "updated": 1790514236086
+    "updated": 1790514248416
   },
   {
     "id": "mujk9nrtll82j",
